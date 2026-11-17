@@ -1288,6 +1288,15 @@
       <path d="M2.2 1.8 L2.2 27.2 L9.2 20.6 L14.1 33.4 L19.2 31.3 L14.3 18.8 L24.6 18.8 Z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
     </svg>
   </div>
+
+  <!-- Capa de audio. HyperFrames mezcla estos clips con data-start/data-duration. -->
+  <audio id="bgm" src="assets/bgm.mp3" loop data-start="0" data-duration="60" data-track-index="10" data-volume="0.15" data-timeline-role="music"></audio>
+  <audio id="sfx-click" src="assets/click.wav" data-start="10.06" data-duration="0.16" data-track-index="11" data-volume="0.8" data-cue="click" data-cue-at="10.06"></audio>
+  <audio id="sfx-click-submit" src="assets/click.wav" data-start="19.00" data-duration="0.16" data-track-index="12" data-volume="0.8" data-cue="click" data-cue-at="19.00"></audio>
+  <audio id="sfx-success" src="assets/success.wav" data-start="23.00" data-duration="1.90" data-track-index="13" data-volume="0.85" data-cue="success" data-cue-at="23.00"></audio>
+  <audio id="sfx-click-return" src="assets/click.wav" data-start="35.40" data-duration="0.16" data-track-index="14" data-volume="0.8" data-cue="click" data-cue-at="35.40"></audio>
+  <audio id="sfx-success-partial" src="assets/success.wav" data-start="42.72" data-duration="1.90" data-track-index="15" data-volume="0.85" data-cue="success" data-cue-at="42.72"></audio>
+  <audio id="sfx-success-closed" src="assets/success.wav" data-start="50.90" data-duration="1.90" data-track-index="16" data-volume="0.85" data-cue="success" data-cue-at="50.90"></audio>
 </div>
 <script src="assets/gsap.min.js"></script>
 <script>
@@ -1296,6 +1305,19 @@
 
   var tl = null;
   var CURSOR_EVENTS = [];
+
+  // Tiempos reales de la acción en pantalla. El brief pedía 10.5/20/36/45/53 s,
+  // pero esos valores caían entre 0.4 y 2.3 s después del gesto visual.
+  var AUDIO_CUES = [
+    { time: 10.06, id: 'sfx-click', type: 'click', label: 'abrir modal' },
+    { time: 19.00, id: 'sfx-click-submit', type: 'click', label: 'enviar solicitud' },
+    { time: 23.00, id: 'sfx-success', type: 'success', label: 'aprobado' },
+    { time: 35.40, id: 'sfx-click-return', type: 'click', label: 'abrir devolución' },
+    { time: 42.72, id: 'sfx-success-partial', type: 'success', label: 'devolución parcial' },
+    { time: 50.90, id: 'sfx-success-closed', type: 'success', label: 'cerrado' }
+  ];
+  var lastSfxTime = 0;
+  var audioClockReady = false;
 
   var CURSOR_TARGETS = [
     { time: 10050, selector: '#btn-nuevo-prestamo', click: true },
@@ -1330,11 +1352,34 @@
     return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
   }
 
+  function trackAudioCues(seconds) {
+    // HyperFrames es el dueño de play/pause/seek de los medios: el render mezcla
+    // los <audio> desde data-start/data-duration. Este contador no toca el audio;
+    // solo registra qué cue cruzó el playhead una vez por transición.
+    if (!audioClockReady || seconds < lastSfxTime) {
+      audioClockReady = true;
+      lastSfxTime = seconds;
+      return;
+    }
+    if (seconds - lastSfxTime > 0.5) {
+      lastSfxTime = seconds;
+      return;
+    }
+    for (var i = 0; i < AUDIO_CUES.length; i += 1) {
+      var cue = AUDIO_CUES[i];
+      if (cue.time > lastSfxTime && cue.time <= seconds) {
+        window.__lastAudioCue = { id: cue.id, type: cue.type, label: cue.label, at: cue.time };
+      }
+    }
+    lastSfxTime = seconds;
+  }
+
   window.setTime = function (timeMs) {
     var t = Number(timeMs);
     if (!isFinite(t)) t = 0;
     t = Math.max(0, Math.min(60000, t));
     if (tl) tl.seek(t / 1000, false);
+    trackAudioCues(t / 1000);
   };
 
   // Build the timeline only after every face is ready, then register it last.

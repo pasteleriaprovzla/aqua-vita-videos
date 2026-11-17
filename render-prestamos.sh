@@ -10,6 +10,13 @@ ARTIFACT="video-prestamos"
 OUTPUT_DIR="$ROOT_DIR/output"
 OUTPUT_FILE="$OUTPUT_DIR/prestamos.mp4"
 
+for ASSET in video/prestamos/assets/bgm.mp3 video/prestamos/assets/click.wav video/prestamos/assets/success.wav; do
+  if [ ! -f "$ROOT_DIR/$ASSET" ]; then
+    echo "✗ Falta $ASSET. Ejecuta: cd video/prestamos && npm run audio:generate" >&2
+    exit 1
+  fi
+done
+
 echo "→ Verificando sesión de GitHub CLI..."
 gh auth status
 
@@ -77,6 +84,12 @@ if [ "$FOUND" != "$OUTPUT_FILE" ]; then
   cp "$FOUND" "$OUTPUT_FILE"
 fi
 
+if ! ffprobe -v error -select_streams a -show_entries stream=codec_name \
+  -of csv=p=0 "$OUTPUT_FILE" | grep -qx "aac"; then
+  echo "✗ El MP4 descargado no contiene una pista AAC; el render salió mudo." >&2
+  exit 1
+fi
+
 SIZE="$(du -h "$OUTPUT_FILE" | cut -f1)"
 echo ""
-echo "✅ Video listo en ./output/prestamos.mp4 ($SIZE)"
+echo "✅ Video listo en ./output/prestamos.mp4 ($SIZE, audio AAC)"

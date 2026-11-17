@@ -46,7 +46,19 @@ jobs:
         working-directory: video/prestamos
         # SwiftShader keeps CI deterministic on runners without a GPU.
         # Two workers keep the 1800-frame capture inside the 30-minute job limit.
+        # HyperFrames mixes the <audio> clips automatically: there is no --audio
+        # flag, and its Chromium already enables autoplay without a user gesture.
         run: npm run render -- --no-browser-gpu --workers 2
+
+      - name: Verify audio stream
+        # Falla el job si el MP4 sale mudo. El render debe contener AAC estéreo.
+        run: |
+          set -euo pipefail
+          test -f out/prestamos.mp4
+          AUDIO_STREAMS="$(ffprobe -v error -select_streams a \
+            -show_entries stream=codec_name -of csv=p=0 out/prestamos.mp4)"
+          echo "Audio streams: ${AUDIO_STREAMS}"
+          echo "${AUDIO_STREAMS}" | grep -qx "aac"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
