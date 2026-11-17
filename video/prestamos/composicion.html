@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, height=900">
+<title>Aqua Vita · Procedimiento del módulo de préstamos</title>
+<link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+<style>
+  @font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 400 800;
+    font-display: block;
+    src: url('assets/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  @font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 400 800;
+    font-display: block;
+    src: url('assets/fonts/plus-jakarta-sans-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+
+  :root {
+    --bg: #f8fafc; --surface: #ffffff; --surface-subtle: #f1f5f9;
+    --ink: #0f172a; --muted: #64748b; --border: #e2e8f0;
+    --teal: #0d9488; --teal-dark: #0f766e; --teal-light: #ccfbf1;
+    --green: #10b981; --green-dark: #15803d; --green-light: #d1fae5;
+    --amber: #f59e0b; --amber-dark: #b45309; --amber-light: #fef3c7;
+    --red: #ef4444; --red-light: #fee2e2;
+    --blue: #0284c7; --blue-dark: #0369a1; --blue-light: #e0f2fe;
+    --purple: #8b5cf6; --purple-dark: #6d28d9; --purple-light: #ede9fe;
+    --shadow-sm: 0 2px 8px rgba(15,23,42,.05);
+    --shadow-md: 0 12px 30px -12px rgba(15,23,42,.18);
+    --shadow-lg: 0 30px 70px -22px rgba(15,23,42,.45);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { width: 1440px; height: 900px; overflow: hidden; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.35; }
+  button, input, select, textarea { font-family: inherit; }
+  button { cursor: pointer; }
+  #root { position: relative; width: 1440px; height: 900px; overflow: hidden; background: var(--bg); }
+  #app { position: absolute; inset: 0; }
+
+  /* ===== HEADER ===== */
+  .admin-header { position: absolute; top: 0; left: 0; right: 0; height: 60px; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: rgba(15,23,42,.97); color: #fff; box-shadow: 0 2px 14px rgba(15,23,42,.18); }
+  .brand { display: flex; align-items: center; gap: 11px; font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+  .brand-mark { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; background: linear-gradient(135deg,#38bdf8,#0284c7); box-shadow: 0 6px 14px -6px rgba(56,189,248,.8); }
+  .brand-divider { width: 1px; height: 22px; background: rgba(255,255,255,.16); margin: 0 3px; }
+  .brand-sub { font-size: 11px; font-weight: 600; color: #94a3b8; letter-spacing: .02em; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .live-pill { display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 11px; border-radius: 999px; background: rgba(16,185,129,.13); color: #34d399; font-size: 10px; font-weight: 800; letter-spacing: .02em; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 3px rgba(52,211,153,.14); }
+  .user-chip { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: #cbd5e1; }
+  .user-avatar { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #e2e8f0; }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar { position: absolute; top: 60px; left: 0; bottom: 0; width: 240px; z-index: 90; background: var(--surface); border-right: 1px solid var(--border); padding: 14px 10px; box-shadow: 2px 0 12px rgba(15,23,42,.04); }
+  .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 14px; margin-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .sidebar-brand .brand-mark { width: 30px; height: 30px; font-size: 14px; }
+  .sidebar-brand-text { flex: 1; font-size: 14px; font-weight: 900; letter-spacing: -.02em; }
+  .sidebar-toggle { width: 28px; height: 28px; border: 1px solid var(--border); background: var(--surface-subtle); color: var(--muted); border-radius: 8px; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+  .sidebar-label { font-size: 9px; font-weight: 800; letter-spacing: .12em; color: #94a3b8; text-transform: uppercase; padding: 0 12px 7px; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 9px; color: var(--muted); font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .nav-item i { width: 18px; text-align: center; font-size: 13px; flex-shrink: 0; }
+  .nav-item.active { color: var(--teal-dark); background: var(--teal-light); font-weight: 800; }
+  .nav-item .nav-count { margin-left: auto; font-size: 9px; font-weight: 900; background: var(--red); color: #fff; border-radius: 999px; padding: 2px 6px; }
+  .nav-item.active .nav-count { background: var(--teal); }
+
+  /* ===== MAIN ===== */
+  .admin-main { position: absolute; top: 60px; left: 240px; right: 0; bottom: 0; padding: 24px 36px 30px; overflow: hidden; }
+  .screen { position: relative; height: 100%; }
+  .section-header { height: 28px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .section-title { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 900; letter-spacing: -.025em; }
+  .section-title i { color: var(--teal); font-size: 18px; }
+  .section-badge { position: relative; display: inline-flex; align-items: center; height: 24px; padding: 0 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .02em; box-shadow: var(--shadow-sm); }
+  .count-stack { position: relative; display: inline-flex; justify-content: flex-end; min-width: 96px; height: 24px; padding: 0; background: none; border: none; box-shadow: none; }
+  .count-layer { position: absolute; right: 0; top: 0; display: inline-flex; align-items: center; height: 24px; padding: 0 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 10px; font-weight: 800; white-space: nowrap; box-shadow: var(--shadow-sm); }
+
+  /* ===== HERO ===== */
+  .prestamos-hero { position: relative; height: 120px; margin-bottom: 12px; padding: 16px 22px; border-radius: 18px; overflow: hidden; color: #fff; background: linear-gradient(135deg,#0f172a 0%,#134e4a 58%,#0f766e 100%); box-shadow: 0 16px 34px -20px rgba(15,118,110,.75); }
+  .prestamos-hero::before { content: ''; position: absolute; width: 260px; height: 260px; right: -90px; top: -120px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,.38), rgba(45,212,191,0) 70%); }
+  .prestamos-hero::after { content: ''; position: absolute; width: 180px; height: 180px; left: 38%; bottom: -130px; border-radius: 50%; background: radial-gradient(circle, rgba(56,189,248,.16), rgba(56,189,248,0) 70%); }
+  .hero-top { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }
+  .hero-kicker { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #99f6e4; }
+  .hero-pill-stack { position: relative; width: 186px; height: 22px; }
+  .hero-pill { position: absolute; right: 0; top: 0; display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 10px; border-radius: 999px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.14); color: #ccfbf1; font-size: 9px; font-weight: 800; white-space: nowrap; }
+  .hero-pill.amber { background: rgba(245,158,11,.18); border-color: rgba(245,158,11,.35); color: #fde68a; }
+  .hero-pill.green { background: rgba(16,185,129,.18); border-color: rgba(16,185,129,.35); color: #a7f3d0; }
+  .hero-body { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-top: 7px; }
+  .hero-total-wrap { display: flex; align-items: baseline; gap: 9px; }
+  .hero-total { font-size: 46px; font-weight: 900; line-height: .95; letter-spacing: -.045em; }
+  .hero-total-suffix { font-size: 11px; font-weight: 700; color: #99f6e4; }
+  .hero-kpis { display: flex; align-items: stretch; gap: 0; margin-bottom: 1px; }
+  .hero-kpi { min-width: 118px; padding: 0 22px; border-left: 1px solid rgba(255,255,255,.14); }
+  .hero-kpi:first-child { border-left: none; }
+  .hero-kpi span { display: block; font-size: 8px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #99f6e4; }
+  .hero-kpi strong { display: block; margin-top: 2px; font-size: 23px; font-weight: 900; line-height: 1; }
+
+  /* ===== TABS / ACTIONS ===== */
+  .prestamos-tabs { display: flex; align-items: center; gap: 7px; height: 34px; margin-bottom: 10px; }
+  .prestamos-tab { position: relative; height: 32px; padding: 0 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-sm); color: var(--muted); font-size: 10.5px; font-weight: 800; }
+  .tab-bg { position: absolute; inset: 0; border-radius: 999px; background: #0f172a; opacity: 0; }
+  .tab-label { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 5px; }
+  .tab-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--red); color: #fff; font-size: 8px; font-weight: 900; }
+  .prestamos-actions { display: flex; align-items: center; gap: 9px; height: 38px; margin-bottom: 12px; }
+  .prestamos-action-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 36px; padding: 0 15px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-size: 10.5px; font-weight: 800; box-shadow: var(--shadow-sm); }
+  .prestamos-action-btn.primary { background: linear-gradient(135deg,#0f766e,#0d9488); border-color: #0f766e; color: #fff; box-shadow: 0 8px 18px -10px rgba(13,148,136,.8); }
+  .actions-hint { margin-left: auto; display: flex; align-items: center; gap: 7px; padding-left: 12px; border-left: 2px solid var(--teal-light); color: var(--muted); font-size: 9.5px; font-weight: 700; }
+  .actions-hint i { color: var(--teal); font-size: 10px; }
+
+  /* ===== LIST / CARDS ===== */
+  .list-stage { position: relative; height: 520px; }
+  .lista-panel { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-content: start; }
+  .prestamo-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-sm); overflow: hidden; }
+  .prestamo-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg,#0d9488,#0f766e); opacity: .75; }
+  .prestamo-card.vencido::before { background: var(--red); }
+  .prestamo-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+  .prestamo-numero { font-size: 8.5px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; color: var(--blue-dark); }
+  .prestamo-card-title { margin-top: 2px; font-size: 15.5px; font-weight: 900; line-height: 1.18; letter-spacing: -.015em; }
+  .prestamo-card-sub { margin-top: 2px; font-size: 9.5px; font-weight: 700; color: var(--muted); }
+  .badge-stack { position: relative; flex-shrink: 0; min-width: 82px; height: 20px; }
+  .prestamo-badge { display: inline-flex; align-items: center; justify-content: center; height: 19px; padding: 0 8px; border-radius: 999px; font-size: 8px; font-weight: 900; letter-spacing: .045em; text-transform: uppercase; white-space: nowrap; }
+  .badge-layer { position: absolute; right: 0; top: 0; }
+  .prestamo-badge.activo { background: var(--teal-light); color: var(--teal-dark); }
+  .prestamo-badge.pendiente { background: var(--purple-light); color: var(--purple-dark); }
+  .prestamo-badge.prestado { background: var(--blue-light); color: var(--blue-dark); }
+  .prestamo-badge.parcial { background: var(--amber-light); color: var(--amber-dark); }
+  .prestamo-badge.devuelto { background: var(--green-light); color: var(--green-dark); }
+  .prestamo-badge.cerrado { background: var(--surface-subtle); color: var(--muted); }
+  .prestamo-badge.vencido { background: var(--red); color: #fff; }
+  .prestamo-card-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 7px; font-size: 9.5px; font-weight: 700; color: var(--muted); }
+  .prestamo-card-meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .prestamo-card-meta i { font-size: 9px; color: #94a3b8; }
+  .prestamo-equipos { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .prestamo-equipo-chip { display: inline-flex; align-items: center; gap: 4px; height: 21px; padding: 0 7px; border-radius: 7px; font-size: 8.5px; font-weight: 800; }
+  .prestamo-equipo-chip.lleno { background: var(--blue-light); color: var(--blue-dark); }
+  .prestamo-equipo-chip.vacio { background: var(--surface-subtle); color: #475569; }
+  .prestamo-equipo-chip.bebedero { background: var(--purple-light); color: var(--purple-dark); }
+  .prestamo-equipo-chip.pendiente { background: var(--amber-light); color: var(--amber-dark); }
+  .prestamo-card-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--border); }
+  .prestamo-btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 27px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-size: 9px; font-weight: 800; }
+  .prestamo-btn.primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .prestamo-btn.success { background: var(--green); border-color: var(--green); color: #fff; }
+  .prestamo-btn.danger { background: var(--red); border-color: var(--red); color: #fff; }
+  .prestamo-btn.ghost { background: var(--surface-subtle); color: var(--muted); }
+  .approved-note { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; color: var(--green-dark); font-size: 8.5px; font-weight: 800; }
+
+  /* ===== PROGRESS ===== */
+  .prestamo-progress { margin-top: 9px; padding-top: 8px; border-top: 1px dashed var(--border); }
+  .progress-top { position: relative; display: flex; align-items: center; justify-content: space-between; height: 13px; }
+  .progress-text-stack { position: relative; flex: 1; height: 13px; }
+  .progress-text { position: absolute; left: 0; top: 0; font-size: 9.5px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+  .progress-text.amber { color: var(--amber-dark); }
+  .progress-text.green { color: var(--green-dark); }
+  .progress-count-stack { position: relative; width: 34px; height: 13px; }
+  .progress-count { position: absolute; right: 0; top: 0; font-size: 9px; font-weight: 900; color: var(--muted); }
+  .progress-count.green { color: var(--green-dark); }
+  .progress-dots { display: flex; gap: 5px; margin-top: 6px; }
+  .progress-dot { flex: 1; height: 5px; border-radius: 999px; background: var(--border); }
+  .progress-check { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; margin-left: 6px; border-radius: 50%; background: var(--green); color: #fff; font-size: 7px; }
+
+  /* ===== HISTORY ===== */
+  .history-note { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 16px; border-radius: 12px; background: #ecfdf5; border: 1px solid #a7f3d0; }
+  .history-note-icon { width: 30px; height: 30px; border-radius: 9px; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+  .history-note strong { display: block; font-size: 11.5px; font-weight: 900; color: #065f46; }
+  .history-note span { display: block; font-size: 9.5px; font-weight: 700; color: #047857; }
+  .history-footer { justify-content: space-between; }
+  .stamp { display: inline-flex; align-items: center; justify-content: center; height: 26px; padding: 0 10px; border: 2px solid var(--green); border-radius: 5px; color: var(--green-dark); font-size: 10px; font-weight: 900; letter-spacing: .14em; opacity: 0; }
+  .history-date { font-size: 9px; font-weight: 800; color: var(--green-dark); }
+
+  /* ===== MODALS ===== */
+  .modal-overlay { position: absolute; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(15,23,42,.7); opacity: 0; visibility: hidden; }
+  .modal-container { position: relative; width: 100%; background: var(--surface); border-radius: 16px; box-shadow: 0 40px 90px -30px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08); overflow: hidden; }
+  .loan-modal { max-width: 980px; }
+  .dev-modal { max-width: 740px; }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; height: 56px; padding: 0 22px; border-bottom: 1px solid var(--border); background: linear-gradient(180deg,#fff,#fbfdfe); }
+  .modal-title { display: flex; align-items: center; gap: 11px; font-size: 15px; font-weight: 900; letter-spacing: -.015em; color: var(--ink); }
+  .modal-icon { width: 32px; height: 32px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; background: var(--teal-light); color: var(--teal-dark); font-size: 13px; }
+  .modal-icon.blue { background: var(--blue-light); color: var(--blue-dark); }
+  .modal-kicker { padding: 3px 8px; border-radius: 999px; background: var(--surface-subtle); color: var(--muted); font-size: 8px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+  .modal-close { width: 28px; height: 28px; border: none; border-radius: 8px; background: var(--surface-subtle); color: var(--muted); font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .modal-foot { display: flex; align-items: center; justify-content: flex-end; gap: 9px; height: 62px; padding: 0 22px; border-top: 1px solid var(--border); background: #fbfdfe; }
+  .foot-hint { display: inline-flex; align-items: center; gap: 6px; margin-right: auto; color: var(--muted); font-size: 9.5px; font-weight: 700; }
+  .foot-hint i { color: var(--teal); }
+  .btn-ghost { height: 36px; padding: 0 16px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); color: var(--muted); font-size: 10.5px; font-weight: 800; }
+  .btn-solid { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 38px; padding: 0 20px; border: none; border-radius: 9px; background: linear-gradient(135deg,#0f766e,#0d9488); color: #fff; font-size: 10.5px; font-weight: 800; box-shadow: 0 8px 20px -10px rgba(13,148,136,.9); }
+  .btn-solid.green { background: linear-gradient(135deg,#059669,#10b981); box-shadow: 0 8px 20px -10px rgba(16,185,129,.9); }
+  .btn-solid.blue { background: linear-gradient(135deg,#0369a1,#0284c7); box-shadow: 0 8px 20px -10px rgba(2,132,199,.9); }
+
+  .loan-body { display: grid; grid-template-columns: 1.04fr .96fr; gap: 14px; padding: 16px 20px 8px; }
+  .loan-col { display: flex; flex-direction: column; min-width: 0; }
+  .prestamo-form-section { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 11px 12px; margin-bottom: 10px; }
+  .prestamo-form-section:last-child { margin-bottom: 0; }
+  .form-title { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: var(--teal-dark); font-size: 10.5px; font-weight: 900; letter-spacing: -.01em; }
+  .form-title i { font-size: 10px; }
+  .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 9px; }
+  .fgrid.full { grid-template-columns: 1fr; }
+  .input-group { display: flex; flex-direction: column; gap: 3px; margin-bottom: 7px; min-width: 0; }
+  .input-group:last-child { margin-bottom: 0; }
+  .input-group.full { grid-column: 1 / -1; }
+  .input-group label { font-size: 8.5px; font-weight: 800; color: var(--muted); }
+  .input-group input, .input-group textarea, .input-group select { width: 100%; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--ink); font-size: 10.5px; font-weight: 700; outline: none; }
+  .input-group input { height: 30px; padding: 0 9px; }
+  .input-group textarea { height: 46px; padding: 7px 9px; resize: none; line-height: 1.4; }
+  .fake-select { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 30px; padding: 0 9px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--ink); font-size: 10.5px; font-weight: 700; }
+  .fake-select i { color: #94a3b8; font-size: 8px; }
+  .fake-select.muted { color: var(--muted); background: var(--surface-subtle); }
+  .fake-select.green { color: var(--green-dark); background: #ecfdf5; border-color: #a7f3d0; }
+  .respaldo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .photo-thumb { width: 66px; height: 50px; border-radius: 8px; background: linear-gradient(135deg,#0f766e,#14b8a6); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+  .photo-info { flex: 1; min-width: 0; }
+  .photo-info strong { display: block; font-size: 10px; font-weight: 900; }
+  .photo-info span { display: block; margin-top: 1px; font-size: 8.5px; font-weight: 700; color: var(--muted); }
+  .photo-ok { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 2px 6px; border-radius: 999px; background: var(--green-light); color: var(--green-dark); font-size: 8px; font-weight: 900; }
+
+  /* builder */
+  .builder-block { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 9px 10px; margin-bottom: 8px; }
+  .builder-title { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; color: var(--teal-dark); font-size: 9.5px; font-weight: 900; }
+  .builder-title i { font-size: 9px; }
+  .builder-btn { display: flex; align-items: center; justify-content: center; gap: 6px; height: 27px; margin-top: 2px; border: 1px dashed #99f6e4; border-radius: 7px; background: #f0fdfa; color: var(--teal-dark); font-size: 9px; font-weight: 800; }
+  .draft-list { display: flex; flex-direction: column; gap: 6px; margin-top: 9px; }
+  .draft-row { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+  .draft-icon { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+  .draft-icon.bottle { background: var(--blue-light); color: var(--blue-dark); }
+  .draft-icon.fountain { background: var(--purple-light); color: var(--purple-dark); }
+  .draft-info { flex: 1; min-width: 0; }
+  .draft-info strong { display: block; font-size: 10px; font-weight: 900; }
+  .draft-info small { display: block; margin-top: 1px; font-size: 8.5px; font-weight: 700; color: var(--muted); }
+  .draft-value { font-size: 9px; font-weight: 900; color: var(--teal-dark); white-space: nowrap; }
+  .draft-total { display: flex; align-items: center; justify-content: space-between; margin-top: 9px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 10px; font-weight: 900; }
+  .draft-total strong { color: var(--teal-dark); }
+  .loan-note { display: flex; align-items: flex-start; gap: 6px; margin-top: 8px; padding: 7px 9px; border-left: 3px solid var(--teal); border-radius: 0 7px 7px 0; background: #ecfdf5; color: #047857; font-size: 8.7px; font-weight: 700; line-height: 1.45; }
+  .loan-note i { margin-top: 1px; }
+
+  /* devolution */
+  .dev-body { padding: 16px 20px 10px; }
+  .dev-summary { display: flex; align-items: center; gap: 0; padding: 10px 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; }
+  .dev-summary-item { min-width: 112px; padding: 0 14px; border-left: 1px solid var(--border); }
+  .dev-summary-item:first-child { padding-left: 0; border-left: none; }
+  .dev-summary-item span { display: block; font-size: 7.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .dev-summary-item strong { display: block; margin-top: 2px; font-size: 11px; font-weight: 900; }
+  .dev-summary-chips { display: flex; gap: 4px; margin-left: auto; }
+  .dev-row { padding: 9px 11px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; }
+  .dev-row-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+  .dev-row-title { display: flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 900; }
+  .dev-row-title i { color: var(--teal); font-size: 10px; }
+  .dev-row-title small { margin-left: 4px; font-size: 8.5px; font-weight: 700; color: var(--muted); }
+  .dev-inputs { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .dev-inputs .input-group { margin-bottom: 0; }
+  .dev-note { display: flex; align-items: center; gap: 7px; margin-top: 8px; padding: 8px 10px; border-radius: 8px; font-size: 9px; font-weight: 800; }
+  .dev-note.amber { background: var(--amber-light); color: var(--amber-dark); }
+  .dev-note.green { background: var(--green-light); color: var(--green-dark); }
+  .dev-note i { font-size: 9px; }
+
+  /* ===== INFO DOCK ===== */
+  .info-overlay { position: absolute; inset: 0; z-index: 800; pointer-events: none; }
+  .info-dock { position: absolute; left: 276px; right: 36px; bottom: 24px; height: 228px; padding: 17px 20px 16px; border-radius: 18px; background: rgba(255,255,255,.98); border: 1px solid #99f6e4; box-shadow: 0 30px 60px -24px rgba(15,23,42,.45), 0 0 0 4px rgba(13,148,136,.06); }
+  .info-dock-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+  .info-dock-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 900; letter-spacing: -.02em; }
+  .info-dock-title i { color: var(--teal); font-size: 13px; }
+  .info-dock-title em { font-style: normal; color: var(--teal); }
+  .info-dock-note { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 999px; background: var(--teal-light); color: var(--teal-dark); font-size: 8.5px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+  .info-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .info-col { position: relative; display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--border); background: #fff; }
+  .info-col.sell { border-color: #bae6fd; background: #f0f9ff; }
+  .info-col.lend { border-color: #99f6e4; background: #f0fdfa; }
+  .info-col.credit { border-color: #fde68a; background: #fffbeb; }
+  .info-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .info-col.sell .info-icon { background: var(--blue); color: #fff; }
+  .info-col.lend .info-icon { background: var(--teal); color: #fff; }
+  .info-col.credit .info-icon { background: var(--amber); color: #fff; }
+  .info-col h4 { font-size: 9px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+  .info-col.sell h4 { color: var(--blue-dark); }
+  .info-col.lend h4 { color: var(--teal-dark); }
+  .info-col.credit h4 { color: var(--amber-dark); }
+  .info-col p { margin-top: 4px; font-size: 9.5px; font-weight: 700; line-height: 1.45; color: #334155; }
+  .info-col .info-tag { display: inline-block; margin-top: 6px; padding: 2px 6px; border-radius: 4px; font-size: 7.5px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+  .info-col.sell .info-tag { background: var(--blue-light); color: var(--blue-dark); }
+  .info-col.lend .info-tag { background: var(--teal-light); color: var(--teal-dark); }
+  .info-col.credit .info-tag { background: var(--amber-light); color: var(--amber-dark); }
+
+  /* ===== TOAST ===== */
+  .toast-overlay { position: absolute; inset: 0; z-index: 900; pointer-events: none; }
+  .toast { position: absolute; top: 78px; right: 26px; display: flex; align-items: center; gap: 11px; width: 366px; padding: 12px 14px; border-radius: 12px; background: #fff; border: 1px solid #a7f3d0; box-shadow: 0 22px 45px -18px rgba(15,23,42,.4); }
+  .toast-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .toast strong { display: block; font-size: 10.5px; font-weight: 900; }
+  .toast span { display: block; margin-top: 2px; font-size: 9px; font-weight: 700; color: var(--muted); }
+
+  /* ===== CHECK OVERLAY ===== */
+  .check-overlay { position: absolute; inset: 0; z-index: 950; display: flex; align-items: center; justify-content: center; background: rgba(15,23,42,.26); }
+  .check-card { width: 430px; padding: 26px 26px 22px; border-radius: 22px; background: #fff; box-shadow: 0 40px 90px -24px rgba(15,23,42,.55); text-align: center; }
+  .check-circle { position: relative; width: 104px; height: 104px; margin: 0 auto 14px; border-radius: 50%; background: linear-gradient(135deg,#059669,#10b981); box-shadow: 0 20px 40px -16px rgba(16,185,129,.7), inset 0 0 0 6px rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center; }
+  .check-svg { width: 54px; height: 54px; }
+  .check-path { fill: none; stroke: #fff; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 52; stroke-dashoffset: 52; }
+  .check-title { font-size: 18px; font-weight: 900; letter-spacing: -.02em; color: var(--green-dark); }
+  .check-sub { margin-top: 4px; font-size: 10px; font-weight: 700; color: var(--muted); }
+  .check-chips { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+
+  /* ===== PHONE ===== */
+  .phone-scene { position: absolute; inset: 0; z-index: 900; }
+  .phone-backdrop { position: absolute; inset: 0; background: rgba(15,23,42,.58); }
+  .phone-center { position: absolute; left: 50%; top: 50%; width: 390px; height: 844px; margin-left: -195px; margin-top: -422px; }
+  .phone-device { position: relative; width: 390px; height: 844px; padding: 9px; border-radius: 48px; background: linear-gradient(160deg,#1e293b,#0b1220 55%,#1e293b); box-shadow: 0 50px 100px -30px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.14), inset 0 0 0 2px rgba(255,255,255,.06); }
+  .phone-device::before { content: ''; position: absolute; left: 50%; top: 15px; width: 86px; height: 21px; margin-left: -43px; border-radius: 999px; background: #050810; z-index: 5; }
+  .phone-screen { position: relative; width: 372px; height: 826px; border-radius: 40px; overflow: hidden; background: var(--bg); }
+  .ph-status { display: flex; align-items: center; justify-content: space-between; height: 28px; padding: 0 18px; color: #fff; background: #0f172a; font-size: 8.5px; font-weight: 800; }
+  .ph-status-right { display: flex; align-items: center; gap: 5px; font-size: 7.5px; }
+  .ph-header { display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 14px; background: rgba(15,23,42,.97); color: #fff; }
+  .ph-brand { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 900; }
+  .ph-brand .brand-mark { width: 26px; height: 26px; border-radius: 7px; font-size: 11px; }
+  .ph-driver { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 999px; background: rgba(56,189,248,.14); color: #7dd3fc; font-size: 8px; font-weight: 800; }
+  .ph-main { height: 682px; padding: 12px 13px 0; overflow: hidden; }
+  .ph-section-head { display: flex; align-items: center; justify-content: space-between; height: 22px; margin-bottom: 8px; }
+  .ph-section-head h3 { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 900; }
+  .ph-section-head h3 i { color: var(--teal); font-size: 12px; }
+  .ph-section-head span { font-size: 8px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+  .ph-hero { position: relative; height: 102px; padding: 11px 13px; margin-bottom: 9px; border-radius: 15px; overflow: hidden; color: #fff; background: linear-gradient(135deg,#0f172a 0%,#134e4a 58%,#0f766e 100%); }
+  .ph-hero::before { content: ''; position: absolute; width: 130px; height: 130px; right: -50px; top: -65px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,.38), rgba(45,212,191,0) 70%); }
+  .ph-hero-top { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }
+  .ph-hero-label { font-size: 7.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: #99f6e4; }
+  .ph-hero-pill { display: inline-flex; align-items: center; gap: 4px; height: 17px; padding: 0 7px; border-radius: 999px; background: rgba(255,255,255,.12); color: #ccfbf1; font-size: 7px; font-weight: 800; }
+  .ph-hero-total { position: relative; z-index: 1; margin-top: 5px; font-size: 31px; font-weight: 900; line-height: 1; letter-spacing: -.04em; }
+  .ph-hero-total small { margin-left: 4px; font-size: 8px; font-weight: 700; color: #99f6e4; }
+  .ph-hero-split { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-top: 7px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,.14); }
+  .ph-hero-split span { display: block; font-size: 6.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: #99f6e4; }
+  .ph-hero-split strong { display: block; margin-top: 1px; font-size: 12px; font-weight: 900; }
+  .ph-new-btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 34px; margin-bottom: 9px; border: none; border-radius: 9px; background: linear-gradient(135deg,#0f766e,#0d9488); color: #fff; font-size: 9.5px; font-weight: 800; box-shadow: 0 7px 16px -8px rgba(13,148,136,.85); }
+  .ph-tabs { display: flex; gap: 5px; margin-bottom: 9px; }
+  .ph-tab { height: 26px; padding: 0 9px; border: 1px solid var(--border); border-radius: 999px; background: #fff; color: var(--muted); font-size: 8px; font-weight: 800; }
+  .ph-tab.active { background: #0f172a; border-color: #0f172a; color: #fff; }
+  .ph-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 10px 11px; box-shadow: var(--shadow-sm); }
+  .ph-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .ph-numero { font-size: 7px; font-weight: 900; letter-spacing: .08em; color: var(--blue-dark); text-transform: uppercase; }
+  .ph-title { margin-top: 1px; font-size: 11.5px; font-weight: 900; line-height: 1.2; }
+  .ph-sub { margin-top: 1px; font-size: 8px; font-weight: 700; color: var(--muted); }
+  .ph-badge { display: inline-flex; align-items: center; height: 17px; padding: 0 7px; border-radius: 999px; background: var(--blue-light); color: var(--blue-dark); font-size: 6.8px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+  .ph-meta { display: flex; flex-wrap: wrap; gap: 3px 8px; margin-top: 6px; font-size: 7.5px; font-weight: 700; color: var(--muted); }
+  .ph-meta span { display: inline-flex; align-items: center; gap: 3px; }
+  .ph-chips { display: flex; gap: 4px; margin-top: 6px; }
+  .ph-chip { display: inline-flex; align-items: center; gap: 3px; height: 17px; padding: 0 6px; border-radius: 5px; font-size: 7px; font-weight: 800; }
+  .ph-chip.lleno { background: var(--blue-light); color: var(--blue-dark); }
+  .ph-chip.bebedero { background: var(--purple-light); color: var(--purple-dark); }
+  .ph-footer { display: flex; gap: 5px; margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--border); }
+  .ph-btn { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-subtle); color: var(--muted); font-size: 7.5px; font-weight: 800; }
+  .ph-nav { display: flex; align-items: center; justify-content: space-around; height: 64px; padding: 4px 3px 6px; border-top: 1px solid var(--border); background: #fff; }
+  .ph-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 16.6%; color: var(--muted); font-size: 6.5px; font-weight: 800; }
+  .ph-nav-item i { font-size: 13px; }
+  .ph-nav-item.active { color: var(--teal); }
+  .ph-nav-item.active i { transform: none; }
+  .phone-caption { position: absolute; left: calc(50% + 228px); top: 126px; width: 268px; padding: 16px 17px; border-radius: 14px; background: #fff; box-shadow: 0 24px 50px -20px rgba(0,0,0,.5); border-left: 4px solid var(--teal); }
+  .phone-caption .cap-kicker { display: inline-flex; align-items: center; gap: 5px; padding: 3px 7px; border-radius: 999px; background: var(--green-light); color: var(--green-dark); font-size: 7.5px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+  .phone-caption h4 { margin-top: 8px; font-size: 14px; font-weight: 900; letter-spacing: -.02em; }
+  .phone-caption p { margin-top: 4px; font-size: 9.5px; font-weight: 700; line-height: 1.5; color: var(--muted); }
+  .phone-caption .cap-line { display: flex; align-items: center; gap: 6px; margin-top: 9px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 8.5px; font-weight: 800; color: var(--teal-dark); }
+
+  /* ===== ADDITIONS / STATE LAYERS ===== */
+  #root { background: #040b16; }
+  #app { opacity: 0; background: var(--bg); }
+  .field-box { position: relative; display: flex; align-items: center; height: 30px; padding: 0 9px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--ink); font-size: 10.5px; font-weight: 700; overflow: hidden; }
+  .field-box .ph { position: absolute; left: 9px; top: 50%; transform: none; margin-top: -6px; color: #cbd5e1; font-size: 9.5px; font-weight: 600; }
+  .field-box .typed { position: relative; z-index: 1; display: inline-block; white-space: nowrap; clip-path: inset(0 100% 0 0); }
+  .field-box.green { border-color: #a7f3d0; background: #ecfdf5; color: var(--green-dark); }
+  .field-box.muted { background: var(--surface-subtle); color: var(--muted); }
+  .field-box .chev { margin-left: auto; color: #94a3b8; font-size: 8px; }
+  .builder-actions { display: flex; gap: 6px; }
+  .builder-actions .builder-btn { flex: 1; }
+  .draft-row { opacity: 0; }
+  .tab-pane { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-content: start; opacity: 0; }
+  #pane-todos { opacity: 1; }
+  #pane-aprobacion { grid-template-columns: 1fr; }
+  #pane-historial { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .prestamo-card.pendiente::before { background: var(--purple); }
+  .prestamo-card.cerrado-card { background: linear-gradient(180deg,#ffffff,#f8fafc); }
+  .prestamo-card.history-card { border-color: #bbf7d0; box-shadow: 0 10px 24px -18px rgba(16,185,129,.55); }
+  .pr003-chips-wrap { position: relative; height: 21px; margin-top: 8px; }
+  .pr003-chips-wrap .prestamo-equipos { position: absolute; left: 0; top: 0; margin-top: 0; }
+  .pr003-footer-wrap { position: relative; height: 37px; margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--border); }
+  .pr003-footer-group { position: absolute; left: 0; right: 0; top: 9px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+  .progress-dot { position: relative; overflow: hidden; }
+  .progress-dot-fill { position: absolute; inset: 0; background: var(--green); border-radius: 999px; }
+  .hero-total-stack { position: relative; min-width: 70px; height: 44px; }
+  .hero-total-layer { position: absolute; left: 0; top: 0; }
+  .hero-state { position: absolute; inset: 16px 22px; }
+  .hero-state.history { opacity: 0; }
+  .hero-history-total { display: flex; align-items: baseline; gap: 9px; margin-top: 6px; }
+  .hero-history-total strong { font-size: 46px; font-weight: 900; line-height: .95; letter-spacing: -.045em; }
+  .hero-history-total span { font-size: 11px; font-weight: 700; color: #99f6e4; }
+  .hero-history-kpis { display: flex; gap: 18px; margin-top: 6px; }
+  .hero-history-kpis span { display: inline-flex; align-items: center; gap: 5px; font-size: 9px; font-weight: 800; color: #ccfbf1; }
+  .hero-history-kpis i { color: #34d399; }
+
+  /* ===== TOAST STATE ===== */
+  .toast-overlay { z-index: 880; }
+  .toast { opacity: 0; }
+  .toast.amber { border-color: #fde68a; }
+  .toast.amber .toast-icon { background: var(--amber); }
+  .toast.blue .toast-icon { background: var(--blue); }
+
+  /* ===== CHECK STATE ===== */
+  .check-overlay { opacity: 0; visibility: hidden; z-index: 1200; }
+  .check-overlay .check-card { transform-origin: center center; }
+  .check-chips .prestamo-equipo-chip { height: 22px; padding: 0 8px; font-size: 8px; }
+  .check-sub strong { color: var(--ink); }
+
+  /* ===== PHONE STATE ===== */
+  .phone-scene { opacity: 0; visibility: hidden; }
+  .ph-btn.primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .ph-btn.amber { background: var(--amber-light); border-color: #fde68a; color: var(--amber-dark); }
+  .phone-caption { opacity: 0; }
+  .phone-caption.left { left: calc(50% - 496px); top: 286px; border-left-color: var(--blue); }
+  .phone-caption.left .cap-kicker { background: var(--blue-light); color: var(--blue-dark); }
+  .phone-caption.left .cap-line { color: var(--blue-dark); }
+  .phone-caption em { font-style: normal; color: var(--ink); font-weight: 900; }
+  .phone-caption .cap-steps { display: flex; align-items: center; gap: 5px; margin-top: 10px; }
+  .phone-caption .cap-step { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--surface-subtle); color: var(--muted); font-size: 8px; font-weight: 900; }
+  .phone-caption .cap-step.on { background: var(--teal); color: #fff; }
+  .phone-caption .cap-bar { flex: 1; height: 1px; background: var(--border); }
+  .ph-notice { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 7px 9px; border-radius: 8px; background: var(--green-light); color: var(--green-dark); font-size: 8px; font-weight: 800; line-height: 1.35; }
+  .ph-route { margin-top: 9px; padding: 10px 11px; border: 1px solid var(--border); border-radius: 12px; background: #fff; box-shadow: var(--shadow-sm); }
+  .ph-route-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; font-size: 7.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .ph-stop { position: relative; display: flex; align-items: center; gap: 7px; padding: 5px 0 5px 15px; }
+  .ph-stop::before { content: ''; position: absolute; left: 3px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%; background: var(--border); }
+  .ph-stop::after { content: ''; position: absolute; left: 5px; top: 55%; bottom: -55%; width: 1px; background: var(--border); }
+  .ph-stop:last-child::after { display: none; }
+  .ph-stop.done::before { background: var(--green); }
+  .ph-stop.active::before { background: var(--teal); box-shadow: 0 0 0 3px var(--teal-light); }
+  .ph-stop strong { font-size: 8.5px; font-weight: 900; }
+  .ph-stop span { margin-left: auto; font-size: 7px; font-weight: 800; color: var(--muted); }
+  .ph-stop.done span { color: var(--green-dark); }
+  .ph-stop.active span { color: var(--teal-dark); }
+  .progress-dot-fill { transform-origin: left center; }
+
+  /* ===== INFO DOCK STATE ===== */
+  .info-dock { opacity: 0; }
+  .info-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,0) 35%, rgba(15,23,42,.12) 100%); opacity: 0; }
+
+  /* ===== SIDEBAR EXTRA ===== */
+  .sidebar-note { position: absolute; left: 10px; right: 10px; bottom: 82px; padding: 12px; border-radius: 12px; background: linear-gradient(135deg,#0f172a,#134e4a); color: #fff; overflow: hidden; }
+  .sidebar-note::before { content: ''; position: absolute; width: 84px; height: 84px; right: -30px; top: -36px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,.45), transparent 70%); }
+  .sidebar-note .sn-kicker { position: relative; z-index: 1; font-size: 8px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; color: #99f6e4; }
+  .sidebar-note .sn-title { position: relative; z-index: 1; margin-top: 4px; font-size: 12px; font-weight: 900; line-height: 1.25; }
+  .sidebar-note .sn-row { position: relative; z-index: 1; display: flex; align-items: center; gap: 6px; margin-top: 9px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.12); font-size: 8.5px; font-weight: 700; color: #ccfbf1; }
+  .sidebar-note .sn-row i { color: #34d399; }
+  .sidebar-foot { position: absolute; left: 10px; right: 10px; bottom: 14px; display: flex; align-items: center; gap: 9px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-subtle); }
+  .sidebar-foot .sf-avatar { width: 30px; height: 30px; border-radius: 9px; background: var(--teal-light); color: var(--teal-dark); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; }
+  .sidebar-foot strong { display: block; font-size: 9.5px; font-weight: 900; }
+  .sidebar-foot span { display: block; font-size: 8px; font-weight: 700; color: var(--muted); }
+
+  /* ===== INTRO ===== */
+  .intro-scene { position: absolute; inset: 0; z-index: 3000; overflow: hidden; opacity: 0; visibility: hidden; background: radial-gradient(circle at 22% 16%, rgba(13,148,136,.42), transparent 42%), radial-gradient(circle at 82% 78%, rgba(2,132,199,.34), transparent 45%), linear-gradient(135deg,#040b16 0%,#081426 52%,#05231f 100%); }
+  .intro-scene::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(148,163,184,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.07) 1px, transparent 1px); background-size: 64px 64px; }
+  .intro-scene::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, #2dd4bf, transparent); opacity: .65; }
+  .intro-ring { position: absolute; border: 1px solid rgba(45,212,191,.18); border-radius: 50%; }
+  .intro-ring.r1 { width: 520px; height: 520px; left: -180px; top: 280px; }
+  .intro-ring.r2 { width: 720px; height: 720px; right: -260px; top: -260px; }
+  .intro-ring.r3 { width: 300px; height: 300px; right: 120px; bottom: -150px; border-color: rgba(56,189,248,.16); }
+  .intro-content { position: absolute; left: 50%; top: 50%; width: 1040px; margin-left: -520px; margin-top: -292px; text-align: center; color: #fff; }
+  .intro-brandline { display: inline-flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: rgba(255,255,255,.06); font-size: 11px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: #ccfbf1; }
+  .intro-brandline .brand-mark { width: 34px; height: 34px; border-radius: 10px; font-size: 15px; }
+  .intro-brandline .sep { width: 1px; height: 16px; background: rgba(255,255,255,.2); }
+  .intro-brandline small { font-size: 9px; font-weight: 800; color: #5eead4; letter-spacing: .14em; }
+  .intro-title { margin-top: 26px; font-size: 76px; font-weight: 900; line-height: .98; letter-spacing: -.055em; }
+  .intro-title span { color: #5eead4; }
+  .intro-sub { max-width: 720px; margin: 18px auto 0; font-size: 17px; font-weight: 600; line-height: 1.5; color: #94a3b8; }
+  .intro-sub strong { color: #e2e8f0; font-weight: 800; }
+  .intro-flow { display: flex; align-items: center; justify-content: center; gap: 0; margin-top: 34px; }
+  .flow-step { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border: 1px solid rgba(255,255,255,.13); border-radius: 999px; background: rgba(255,255,255,.05); color: #e2e8f0; font-size: 10px; font-weight: 900; letter-spacing: .04em; }
+  .flow-step i { color: #2dd4bf; font-size: 11px; }
+  .flow-step.done { border-color: rgba(45,212,191,.4); background: rgba(13,148,136,.18); color: #ccfbf1; }
+  .flow-step.done i { color: #34d399; }
+  .flow-link { width: 42px; height: 1px; background: linear-gradient(90deg, rgba(45,212,191,.45), rgba(148,163,184,.18)); }
+  .intro-foot { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 36px; font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #64748b; }
+  .intro-foot span { display: inline-flex; align-items: center; gap: 6px; }
+  .intro-foot i { color: #2dd4bf; }
+  .intro-foot .dot { width: 4px; height: 4px; border-radius: 50%; background: #475569; }
+  .intro-scan { position: absolute; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(45,212,191,.35), transparent); }
+
+  /* ===== OUTRO ===== */
+  .outro-scene { position: absolute; inset: 0; z-index: 3000; overflow: hidden; opacity: 0; visibility: hidden; background: radial-gradient(circle at 50% 30%, rgba(13,148,136,.34), transparent 46%), linear-gradient(160deg,#040b16,#071a20 58%,#03120f); }
+  .outro-scene::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(148,163,184,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.06) 1px, transparent 1px); background-size: 64px 64px; }
+  .outro-content { position: absolute; left: 50%; top: 50%; width: 960px; margin-left: -480px; margin-top: -244px; text-align: center; color: #fff; }
+  .outro-check { position: relative; width: 112px; height: 112px; margin: 0 auto 20px; border-radius: 50%; background: linear-gradient(135deg,#059669,#10b981); box-shadow: 0 24px 50px -18px rgba(16,185,129,.65), inset 0 0 0 7px rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center; }
+  .outro-check i { font-size: 46px; color: #fff; }
+  .outro-kicker { font-size: 10px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; color: #5eead4; }
+  .outro-title { margin-top: 12px; font-size: 68px; font-weight: 900; line-height: 1; letter-spacing: -.055em; }
+  .outro-title span { color: #5eead4; }
+  .outro-sub { max-width: 660px; margin: 16px auto 0; font-size: 16px; font-weight: 600; line-height: 1.5; color: #94a3b8; }
+  .outro-pills { display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 26px; }
+  .outro-pill { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 15px; border: 1px solid rgba(45,212,191,.32); border-radius: 999px; background: rgba(13,148,136,.16); color: #ccfbf1; font-size: 10px; font-weight: 900; }
+  .outro-pill i { color: #34d399; }
+  .outro-brandline { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 34px; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #64748b; }
+  .outro-brandline .brand-mark { width: 28px; height: 28px; border-radius: 8px; font-size: 12px; }
+  .outro-brandline span { color: #e2e8f0; }
+
+  /* ===== CURSOR ===== */
+  #click-layer { position: absolute; inset: 0; z-index: 4990; pointer-events: none; }
+  .click-ring { position: absolute; left: 0; top: 0; width: 34px; height: 34px; margin-left: -17px; margin-top: -17px; border: 2px solid rgba(13,148,136,.95); border-radius: 50%; box-shadow: 0 0 0 5px rgba(13,148,136,.14); opacity: 0; }
+  .click-ring.light { border-color: rgba(255,255,255,.95); box-shadow: 0 0 0 5px rgba(255,255,255,.16); }
+  #cursor { position: absolute; left: 0; top: 0; z-index: 5000; width: 0; height: 0; opacity: 0; pointer-events: none; }
+  .cursor-arrow { position: absolute; left: -3px; top: -2px; width: 27px; height: 34px; filter: drop-shadow(0 6px 7px rgba(15,23,42,.45)); }
+
+  /* ===== SMALL FIXES ===== */
+  .prestamo-card { min-height: 212px; }
+  .prestamo-card .approved-note { margin-left: auto; }
+  .prestamo-numero.blue { color: var(--blue-dark); }
+  .prestamo-numero.green { color: var(--green-dark); }
+  .prestamo-numero.amber { color: var(--amber-dark); }
+  .modal-overlay { opacity: 0; visibility: hidden; }
+  .modal-overlay .modal-container { transform-origin: center center; }
+  .dev-input-box .typed { color: var(--teal-dark); font-weight: 900; }
+  .dev-grid-note { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  .dev-callout { display: flex; align-items: flex-start; gap: 7px; padding: 8px 10px; border-radius: 8px; font-size: 8.7px; font-weight: 700; line-height: 1.45; }
+  .dev-callout.amber { background: var(--amber-light); color: var(--amber-dark); }
+  .dev-callout.green { background: var(--green-light); color: var(--green-dark); }
+  .dev-callout i { margin-top: 1px; }
+  .tiny-label { font-size: 7.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .history-note.history-note-compact { height: 52px; }
+  .history-note .hn-meta { margin-left: auto; text-align: right; }
+  .history-note .hn-meta strong { font-size: 9.5px; }
+  .history-note .hn-meta span { font-size: 8.5px; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="prestamos" data-start="0" data-duration="60" data-width="1440" data-height="900" data-fps="30">
+  <div id="app">
+    <header class="admin-header">
+      <div class="brand">
+        <span class="brand-mark"><i class="fa-solid fa-droplet"></i></span>
+        <span>Aqua Vita</span>
+        <span class="brand-divider"></span>
+        <span class="brand-sub">Tienda Central · Operaciones</span>
+      </div>
+      <div class="header-right">
+        <span class="live-pill"><i class="live-dot"></i> EN LÍNEA</span>
+        <span class="user-chip"><span class="user-avatar">AV</span> Administración</span>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-mark"><i class="fa-solid fa-droplet"></i></span>
+        <span class="sidebar-brand-text">AguaPanel</span>
+        <span class="sidebar-toggle"><i class="fa-solid fa-chevron-left"></i></span>
+      </div>
+      <div class="sidebar-label">Gestión</div>
+      <nav class="sidebar-nav">
+        <div class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</div>
+        <div class="nav-item"><i class="fa-solid fa-users"></i> Clientes</div>
+        <div class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventario</div>
+        <div class="nav-item active"><i class="fa-solid fa-hand-holding-droplet"></i> Préstamos</div>
+        <div class="nav-item"><i class="fa-solid fa-cart-shopping"></i> Ventas</div>
+        <div class="nav-item"><i class="fa-solid fa-chart-line"></i> Reportes</div>
+      </nav>
+
+      <div class="sidebar-note">
+        <div class="sn-kicker">Equipos fuera</div>
+        <div class="sn-title">Cada botella y bebedero tiene un responsable.</div>
+        <div class="sn-row"><i class="fa-solid fa-barcode"></i> Cada unidad con responsable</div>
+        <div class="sn-row"><i class="fa-solid fa-rotate-left"></i> 2 devoluciones hoy</div>
+      </div>
+
+      <div class="sidebar-foot">
+        <span class="sf-avatar"><i class="fa-solid fa-user-tie"></i></span>
+        <div><strong>Salomé Vargas</strong><span>Administradora</span></div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="screen">
+        <div class="section-header">
+          <div class="section-title"><i class="fa-solid fa-hand-holding-droplet"></i> Préstamos <span class="section-badge" style="margin-left:4px; background:var(--teal-light); border-color:#99f6e4; color:var(--teal-dark);">Equipos que salen y vuelven</span></div>
+          <div class="count-stack">
+            <span class="count-layer" id="count-2a" style="opacity:1">2 abiertos</span>
+            <span class="count-layer" id="count-3" style="opacity:0">3 abiertos</span>
+            <span class="count-layer" id="count-2b" style="opacity:0">2 abiertos</span>
+            <span class="count-layer" id="count-0" style="opacity:0">0 abiertos</span>
+          </div>
+        </div>
+
+        <section class="prestamos-hero">
+          <div class="hero-state" id="hero-default">
+            <div class="hero-top">
+              <span class="hero-kicker"><i class="fa-solid fa-chart-simple"></i> Control de equipos · Tienda Central</span>
+              <span class="hero-pill"><i class="fa-solid fa-rotate"></i> Actualizado 09:41</span>
+            </div>
+            <div class="hero-body">
+              <div>
+                <div class="hero-total-wrap">
+                  <div class="hero-total-stack">
+                    <span class="hero-total hero-total-layer" id="hero-total-5a" style="opacity:1">5</span>
+                    <span class="hero-total hero-total-layer" id="hero-total-8" style="opacity:0">8</span>
+                    <span class="hero-total hero-total-layer" id="hero-total-7" style="opacity:0">7</span>
+                    <span class="hero-total hero-total-layer" id="hero-total-5b" style="opacity:0">5</span>
+                  </div>
+                  <span class="hero-total-suffix">UNIDADES<br>EN PRÉSTAMO</span>
+                </div>
+              </div>
+              <div class="hero-kpis">
+                <div class="hero-kpi"><span>Próxima devolución</span><strong>24 nov</strong></div>
+                <div class="hero-kpi"><span>Devoluciones hoy</span><strong>2</strong></div>
+                <div class="hero-kpi"><span>Chofer asignado</span><strong>Carlos M.</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-state history" id="hero-history">
+            <div class="hero-top">
+              <span class="hero-kicker"><i class="fa-solid fa-clock-rotate-left"></i> Historial · Tienda Central</span>
+              <span class="hero-pill green"><i class="fa-solid fa-circle-check"></i> 2 cerrados</span>
+            </div>
+            <div class="hero-history-total"><strong>0</strong><span>UNIDADES PENDIENTES</span></div>
+            <div class="hero-history-kpis">
+              <span><i class="fa-solid fa-check"></i> 5 unidades devueltas</span>
+              <span><i class="fa-solid fa-lock"></i> 2 préstamos cerrados</span>
+              <span><i class="fa-solid fa-shield-halved"></i> Bs 0 en garantía</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="prestamos-tabs">
+          <button class="prestamos-tab" id="tab-todos"><span class="tab-bg" id="tab-bg-todos" style="opacity:0"></span><span class="tab-label" id="tab-label-todos" style="color:#ffffff">Todos</span></button>
+          <button class="prestamos-tab" id="tab-activos"><span class="tab-bg" id="tab-bg-activos" style="opacity:0"></span><span class="tab-label" id="tab-label-activos">Activos</span></button>
+          <button class="prestamos-tab" id="tab-aprobar"><span class="tab-bg" id="tab-bg-aprobar" style="opacity:0"></span><span class="tab-label" id="tab-label-aprobar">Aprobación <span class="tab-badge" id="aprobacion-badge" style="opacity:0">1</span></span></button>
+          <button class="prestamos-tab" id="tab-historial"><span class="tab-bg" id="tab-bg-historial" style="opacity:0"></span><span class="tab-label" id="tab-label-historial">Historial</span></button>
+        </div>
+
+        <div class="prestamos-actions">
+          <button class="prestamos-action-btn primary" id="btn-nuevo-prestamo"><i class="fa-solid fa-plus"></i> Nuevo préstamo</button>
+          <button class="prestamos-action-btn" id="btn-registrar-devolucion"><i class="fa-solid fa-rotate-left"></i> Registrar devolución</button>
+          <button class="prestamos-action-btn"><i class="fa-solid fa-file-export"></i> Exportar</button>
+          <div class="actions-hint"><i class="fa-solid fa-circle-info"></i> Vender entrega; prestar obliga a devolver.</div>
+        </div>
+
+        <div class="list-stage">
+          <div class="tab-pane" id="pane-todos">
+            <article class="prestamo-card vencido" id="card-pr001">
+              <div class="prestamo-card-top">
+                <div>
+                  <div class="prestamo-numero">PR-001 · Vencido</div>
+                  <div class="prestamo-card-title">Minimarket El Sol</div>
+                  <div class="prestamo-card-sub">Luis Mamani · CI 7891234</div>
+                </div>
+                <div class="badge-stack"><span class="prestamo-badge vencido badge-layer">Vencido</span></div>
+              </div>
+              <div class="prestamo-card-meta">
+                <span><i class="fa-regular fa-calendar"></i> Entrega 10 nov</span>
+                <span><i class="fa-solid fa-clock"></i> Vencía 16 nov</span>
+                <span><i class="fa-solid fa-phone"></i> 701 22334</span>
+              </div>
+              <div class="prestamo-equipos">
+                <span class="prestamo-equipo-chip lleno"><i class="fa-solid fa-bottle-water"></i> 2 botellas llenas</span>
+                <span class="prestamo-equipo-chip bebedero"><i class="fa-solid fa-tint"></i> 1 bebedero</span>
+              </div>
+              <div class="prestamo-card-footer">
+                <button class="prestamo-btn ghost"><i class="fa-solid fa-bell"></i> Recordar</button>
+                <button class="prestamo-btn primary"><i class="fa-solid fa-rotate-left"></i> Devolver</button>
+                <span class="approved-note" style="color:var(--red)"><i class="fa-solid fa-triangle-exclamation"></i> 1 día de atraso</span>
+              </div>
+              <div class="prestamo-progress">
+                <div class="progress-top"><span class="progress-text">3 unidades en poder del cliente</span><span class="progress-count">0/3</span></div>
+                <div class="progress-dots"><span class="progress-dot"></span><span class="progress-dot"></span><span class="progress-dot"></span></div>
+              </div>
+            </article>
+
+            <article class="prestamo-card" id="card-pr002">
+              <div class="prestamo-card-top">
+                <div>
+                  <div class="prestamo-numero">PR-002 · En curso</div>
+                  <div class="prestamo-card-title">Restaurante Los Andes</div>
+                  <div class="prestamo-card-sub">María Fernández · CI 6543210</div>
+                </div>
+                <div class="badge-stack"><span class="prestamo-badge prestado badge-layer">Prestado</span></div>
+              </div>
+              <div class="prestamo-card-meta">
+                <span><i class="fa-regular fa-calendar"></i> Entrega 14 nov</span>
+                <span><i class="fa-solid fa-clock"></i> Vence 21 nov</span>
+                <span><i class="fa-solid fa-phone"></i> 712 88990</span>
+              </div>
+              <div class="prestamo-equipos">
+                <span class="prestamo-equipo-chip bebedero"><i class="fa-solid fa-tint"></i> 2 bebederos</span>
+              </div>
+              <div class="prestamo-card-footer">
+                <button class="prestamo-btn primary"><i class="fa-solid fa-rotate-left"></i> Devolver</button>
+                <button class="prestamo-btn ghost">Ver detalle</button>
+                <span class="approved-note"><i class="fa-regular fa-circle-check"></i> Vence 21 nov</span>
+              </div>
+              <div class="prestamo-progress">
+                <div class="progress-top"><span class="progress-text">2 unidades en poder del cliente</span><span class="progress-count">0/2</span></div>
+                <div class="progress-dots"><span class="progress-dot"></span><span class="progress-dot"></span></div>
+              </div>
+            </article>
+
+            <article class="prestamo-card cerrado-card" id="card-pr000">
+              <div class="prestamo-card-top">
+                <div>
+                  <div class="prestamo-numero green">PR-000 · Historial</div>
+                  <div class="prestamo-card-title">Panadería San José</div>
+                  <div class="prestamo-card-sub">Juana Rojas · CI 3322110</div>
+                </div>
+                <div class="badge-stack"><span class="prestamo-badge devuelto badge-layer">Devuelto</span></div>
+              </div>
+              <div class="prestamo-card-meta">
+                <span><i class="fa-regular fa-calendar"></i> Entregado 29 oct</span>
+                <span><i class="fa-solid fa-clock"></i> Cerrado 05 nov</span>
+                <span><i class="fa-solid fa-phone"></i> 700 11223</span>
+              </div>
+              <div class="prestamo-equipos">
+                <span class="prestamo-equipo-chip bebedero"><i class="fa-solid fa-tint"></i> 2 bebederos</span>
+              </div>
+              <div class="prestamo-card-footer">
+                <button class="prestamo-btn ghost">Ver detalle</button>
+                <span class="approved-note"><i class="fa-solid fa-circle-check"></i> Cerrado 05 nov · 2/2</span>
+              </div>
+              <div class="prestamo-progress">
+                <div class="progress-top"><span class="progress-text green">2 de 2 devueltos</span><span class="progress-count green">2/2</span><span class="progress-check"><i class="fa-solid fa-check"></i></span></div>
+                <div class="progress-dots"><span class="progress-dot"><span class="progress-dot-fill"></span></span><span class="progress-dot"><span class="progress-dot-fill"></span></span></div>
+              </div>
+            </article>
+
+            <article class="prestamo-card" id="card-pr003-todos" style="opacity:0">
+              <div class="prestamo-card-top">
+                <div>
+                  <div class="prestamo-numero">PR-003 · Hoy 09:42</div>
+                  <div class="prestamo-card-title">Tienda Doña Rosa</div>
+                  <div class="prestamo-card-sub">Rosa Quispe · CI 4567890</div>
+                </div>
+                <div class="badge-stack">
+                  <span class="prestamo-badge prestado badge-layer" id="pr003-badge-prestado" style="opacity:0">Prestado</span>
+                  <span class="prestamo-badge parcial badge-layer" id="pr003-badge-parcial" style="opacity:0">Parcial</span>
+                  <span class="prestamo-badge devuelto badge-layer" id="pr003-badge-devuelto" style="opacity:0">Devuelto</span>
+                </div>
+              </div>
+              <div class="prestamo-card-meta">
+                <span><i class="fa-regular fa-calendar"></i> Entrega hoy</span>
+                <span><i class="fa-solid fa-clock"></i> Devolución 24 nov</span>
+                <span><i class="fa-solid fa-location-dot"></i> Av. Monseñor Rivero #123</span>
+              </div>
+              <div class="pr003-chips-wrap">
+                <div class="prestamo-equipos" id="pr003-chips-prestado">
+                  <span class="prestamo-equipo-chip lleno"><i class="fa-solid fa-bottle-water"></i> 2 botellas llenas</span>
+                  <span class="prestamo-equipo-chip bebedero"><i class="fa-solid fa-tint"></i> 1 bebedero</span>
+                </div>
+                <div class="prestamo-equipos" id="pr003-chips-parcial" style="opacity:0">
+                  <span class="prestamo-equipo-chip lleno"><i class="fa-solid fa-bottle-water"></i> 1 botella llena</span>
+                  <span class="prestamo-equipo-chip bebedero"><i class="fa-solid fa-tint"></i> 1 bebedero</span>
+                </div>
+                <div class="prestamo-equipos" id="pr003-chips-devuelto" style="opacity:0">
+                  <span class="prestamo-equipo-chip devuelto" style="background:var(--green-light); color:var(--green-dark)"><i class="fa-solid fa-check"></i> 3 unidades devueltas</span>
+                </div>
+              </div>
+              <div class="pr003-footer-wrap">
+                <div class="pr003-footer-group" id="pr003-footer-open">
+                  <button class="prestamo-btn primary" id="btn-devolver-pr003"><i class="fa-solid fa-rotate-left"></i> Devolver</button>
+                  <button class="prestamo-btn ghost">Ver detalle</button>
+                  <span class="approved-note"><i class="fa-solid fa-check"></i> Aprobado 09:42</span>
+                </div>
+                <div class="pr003-footer-group" id="pr003-footer-closed" style="opacity:0">
+                  <button class="prestamo-btn ghost">Ver detalle</button>
+                  <span class="stamp" id="pr003-stamp">Devuelto</span>
+                  <span class="approved-note"><i class="fa-solid fa-lock"></i> Cerrado 11:05</span>
+                </div>
+              </div>
+              <div class="prestamo-progress">
+                <div class="progress-top">
+                  <div class="progress-text-stack">
+                    <span class="progress-text" id="pr003-text-0">0 de 3 devueltas</span>
+                    <span class="progress-text amber" id="pr003-text-1" style="opacity:0">1 de 3 devuelta</span>
+                    <span class="progress-text green" id="pr003-text-3" style="opacity:0">3 de 3 devueltas</span>
+                  </div>
+                  <div class="progress-count-stack">
+                    <span class="progress-count" id="pr003-count-0">0/3</span>
+                    <span class="progress-count" id="pr003-count-1" style="opacity:0">1/3</span>
+                    <span class="progress-count green" id="pr003-count-3" style="opacity:0">3/3</span>
+                  </div>
+                </div>
+                <div class="progress-dots">
+                  <span class="progress-dot"><span class="progress-dot-fill" id="pr003-dot-1" style="transform-origin:left center"></span></span>
+                  <span class="progress-dot"><span class="progress-dot-fill" id="pr003-dot-2" style="transform-origin:left center"></span></span>
+                  <span class="progress-dot"><span class="progress-dot-fill" id="pr003-dot-3" style="transform-origin:left center"></span></span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="tab-pane" id="pane-aprobacion">
+            <article class="prestamo-card pendiente" id="card-pr003-aprobacion">
+              <div class="prestamo-card-top">
+                <div>
+                  <div class="prestamo-numero purple" style="color:var(--purple-dark)">PR-003 · Solicitud nueva</div>
+                  <div class="prestamo-card-title">Tienda Doña Rosa</div>
+                  <div class="prestamo-card-sub">Rosa Quispe · CI 4567890 · 712 34567</div>
+                </div>
+                <div class="badge-stack"><span class="prestamo-badge pendiente badge-layer">Pendiente</span></div>
+              </div>
+              <div class="prestamo-card-meta">
+                <span><i class="fa-regular fa-calendar"></i> Solicitud hoy 09:41</span>
+                <span><i class="fa-solid fa-clock"></i> Devolución 24 nov</span>
+                <span><i class="fa-solid fa-location-dot"></i> Av. Monseñor Rivero #123</span>
+                <span><i class="fa-solid fa-money-bill-wave"></i> Garantía Bs 120</span>
+              </div>
+              <div class="prestamo-equipos">
+                <span class="prestamo-equipo-chip lleno"><i class="fa-solid fa-bottle-water"></i> 2 botellas llenas</span>
+                <span class="prestamo-equipo-chip bebedero"><i class="fa-solid fa-tint"></i> 1 bebedero</span>
+                <span class="prestamo-equipo-chip pendiente"><i class="fa-solid fa-clock"></i> Por aprobar</span>
+              </div>
+              <div class="prestamo-card-footer">
+                <button class="prestamo-btn ghost"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+                <button class="prestamo-btn success" id="btn-aprobar-pr003"><i class="fa-solid fa-check"></i> Aprobar préstamo</button>
+                <span class="approved-note" style="color:var(--purple-dark)"><i class="fa-solid fa-paperclip"></i> Respaldo CI adjunto</span>
+              </div>
+              <div class="prestamo-progress">
+                <div class="progress-top"><span class="progress-text">3 unidades solicitadas</span><span class="progress-count">0/3</span></div>
+                <div class="progress-dots"><span class="progress-dot"></span><span class="progress-dot"></span><span class="progress-dot"></span></div>
+              </div>
+            </article>
+          </div>
+
+          <div class="tab-pane" id="pane-historial">
+            <div class="history-note history-note-compact">
+              <div class="history-note-icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div><strong>PR-003 cerrado sin pendientes</strong><span>Rosa Quispe devolvió las 3 unidades. Garantía liberada.</span></div>
+              <div class="hn-meta"><strong>3/3 devueltas</strong><span>11:05 · Tienda Central</span></div>
+            </div>
+            <article class="prestamo-card cerrado-card history-card" id="card-pr003-history">
+              <div class="prestamo-card-top">
+                <div>
+                  <div class="prestamo-numero green">PR-003 · Cerrado</div>
+                  <div class="prestamo-card-title">Tienda Doña Rosa</div>
+                  <div class="prestamo-card-sub">Rosa Quispe · CI 4567890</div>
+                </div>
+                <div class="badge-stack"><span class="prestamo-badge devuelto badge-layer">Devuelto</span></div>
+              </div>
+              <div class="prestamo-card-meta">
+                <span><i class="fa-regular fa-calendar"></i> Entregado 17 nov</span>
+                <span><i class="fa-solid fa-clock"></i> Cerrado 17 nov · 11:05</span>
+                <span><i class="fa-solid fa-rotate-left"></i> 2 devoluciones</span>
+              </div>
+              <div class="prestamo-equipos">
+                <span class="prestamo-equipo-chip devuelto" style="background:var(--green-light); color:var(--green-dark)"><i class="fa-solid fa-bottle-water"></i> 2 botellas</span>
+                <span class="prestamo-equipo-chip devuelto" style="background:var(--green-light); color:var(--green-dark)"><i class="fa-solid fa-tint"></i> 1 bebedero</span>
+                <span class="prestamo-equipo-chip devuelto" style="background:var(--green-light); color:var(--green-dark)"><i class="fa-solid fa-check"></i> 3/3</span>
+              </div>
+              <div class="prestamo-card-footer history-footer">
+                <button class="prestamo-btn ghost">Ver detalle</button>
+                <span class="stamp" id="history-stamp" style="opacity:1">Devuelto</span>
+                <span class="history-date">Cierre 17 nov · 11:05</span>
+              </div>
+              <div class="prestamo-progress">
+                <div class="progress-top"><span class="progress-text green">3 de 3 devueltas</span><span class="progress-count green">3/3</span><span class="progress-check"><i class="fa-solid fa-check"></i></span></div>
+                <div class="progress-dots"><span class="progress-dot"><span class="progress-dot-fill"></span></span><span class="progress-dot"><span class="progress-dot-fill"></span></span><span class="progress-dot"><span class="progress-dot-fill"></span></span></div>
+              </div>
+            </article>
+
+            <article class="prestamo-card cerrado-card" id="card-pr000-history">
+              <div class="prestamo-card-top">
+                <div>
+                  <div class="prestamo-numero green">PR-000 · Cerrado</div>
+                  <div class="prestamo-card-title">Panadería San José</div>
+                  <div class="prestamo-card-sub">Juana Rojas · CI 3322110</div>
+                </div>
+                <div class="badge-stack"><span class="prestamo-badge devuelto badge-layer">Devuelto</span></div>
+              </div>
+              <div class="prestamo-card-meta">
+                <span><i class="fa-regular fa-calendar"></i> Entregado 29 oct</span>
+                <span><i class="fa-solid fa-clock"></i> Cerrado 05 nov</span>
+                <span><i class="fa-solid fa-rotate-left"></i> 1 devolución</span>
+              </div>
+              <div class="prestamo-equipos">
+                <span class="prestamo-equipo-chip devuelto" style="background:var(--green-light); color:var(--green-dark)"><i class="fa-solid fa-tint"></i> 2 bebederos</span>
+                <span class="prestamo-equipo-chip devuelto" style="background:var(--green-light); color:var(--green-dark)"><i class="fa-solid fa-check"></i> 2/2</span>
+              </div>
+              <div class="prestamo-card-footer history-footer">
+                <button class="prestamo-btn ghost">Ver detalle</button>
+                <span class="stamp" style="opacity:1">Devuelto</span>
+                <span class="history-date">Cierre 05 nov · 16:20</span>
+              </div>
+              <div class="prestamo-progress">
+                <div class="progress-top"><span class="progress-text green">2 de 2 devueltos</span><span class="progress-count green">2/2</span><span class="progress-check"><i class="fa-solid fa-check"></i></span></div>
+                <div class="progress-dots"><span class="progress-dot"><span class="progress-dot-fill"></span></span><span class="progress-dot"><span class="progress-dot-fill"></span></span></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="modal-overlay" id="loan-modal">
+      <div class="modal-container loan-modal" id="loan-modal-card">
+        <div class="modal-head">
+          <div class="modal-title"><span class="modal-icon"><i class="fa-solid fa-plus"></i></span> Nuevo préstamo <span class="modal-kicker">Solicitud</span></div>
+          <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="loan-body">
+          <div class="loan-col">
+            <div class="prestamo-form-section">
+              <div class="form-title"><i class="fa-solid fa-user"></i> Datos del cliente</div>
+              <div class="fgrid">
+                <div class="input-group">
+                  <label>Cliente</label>
+                  <div class="field-box" id="f-cliente"><span class="ph">Nombre completo</span><span class="typed">Rosa Quispe</span></div>
+                </div>
+                <div class="input-group">
+                  <label>CI</label>
+                  <div class="field-box" id="f-ci"><span class="ph">Documento</span><span class="typed">4567890</span></div>
+                </div>
+                <div class="input-group">
+                  <label>Teléfono</label>
+                  <div class="field-box" id="f-telefono"><span class="ph">Celular</span><span class="typed">712 34567</span></div>
+                </div>
+                <div class="input-group">
+                  <label>Fecha de devolución</label>
+                  <div class="fake-select">24 nov 2026 <i class="fa-solid fa-chevron-down"></i></div>
+                </div>
+                <div class="input-group full">
+                  <label>Dirección</label>
+                  <div class="field-box" id="f-direccion"><span class="ph">Dirección de entrega</span><span class="typed">Av. Monseñor Rivero #123</span></div>
+                </div>
+                <div class="input-group">
+                  <label>Garantía (Bs)</label>
+                  <div class="field-box" id="f-garantia"><span class="ph">0</span><span class="typed">120</span></div>
+                </div>
+                <div class="input-group">
+                  <label>Tipo de operación</label>
+                  <div class="fake-select muted">Préstamo de equipos <i class="fa-solid fa-chevron-down"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="prestamo-form-section">
+              <div class="form-title"><i class="fa-solid fa-id-card"></i> Respaldo</div>
+              <div class="respaldo-row">
+                <div class="photo-thumb"><i class="fa-solid fa-id-card"></i></div>
+                <div class="photo-info">
+                  <strong>CI anverso · Rosa Quispe</strong>
+                  <span>JPG · 1.2 MB · adjuntado hoy 09:40</span>
+                  <span class="photo-ok"><i class="fa-solid fa-check"></i> Verificado</span>
+                </div>
+              </div>
+              <div class="fake-select green">Respaldo verificado · la garantía no se cobra <i class="fa-solid fa-shield-halved"></i></div>
+            </div>
+          </div>
+
+          <div class="loan-col">
+            <div class="prestamo-form-section">
+              <div class="form-title"><i class="fa-solid fa-boxes-stacked"></i> Equipos a prestar</div>
+              <div class="builder-block">
+                <div class="builder-title"><i class="fa-solid fa-plus"></i> Agregar unidad</div>
+                <div class="builder-actions">
+                  <button class="builder-btn" id="btn-add-bottle"><i class="fa-solid fa-bottle-water"></i> Botella 20 L</button>
+                  <button class="builder-btn" id="btn-add-fountain"><i class="fa-solid fa-tint"></i> Bebedero</button>
+                </div>
+                <div class="draft-list">
+                  <div class="draft-row" id="draft-bottle">
+                    <span class="draft-icon bottle"><i class="fa-solid fa-bottle-water"></i></span>
+                    <div class="draft-info"><strong>Botella 20 L · llena</strong><small>Retornable · código BEB-001</small></div>
+                    <span class="draft-value">x2 · Bs 70</span>
+                  </div>
+                  <div class="draft-row" id="draft-fountain">
+                    <span class="draft-icon fountain"><i class="fa-solid fa-tint"></i></span>
+                    <div class="draft-info"><strong>Bebedero dispensador</strong><small>Retornable · código DIS-014</small></div>
+                    <span class="draft-value">x1 · Bs 35</span>
+                  </div>
+                </div>
+                <div class="draft-total"><span>Total del préstamo</span><strong>3 unidades · Bs 105</strong></div>
+              </div>
+              <div class="loan-note"><i class="fa-solid fa-circle-info"></i><span>Esto no es una venta: cada botella y bebedero queda registrado y debe volver a Aqua Vita.</span></div>
+            </div>
+
+            <div class="prestamo-form-section">
+              <div class="form-title"><i class="fa-solid fa-route"></i> Trazabilidad</div>
+              <div class="fgrid">
+                <div class="input-group"><label>Responsable de entrega</label><div class="fake-select">Salomé Vargas <i class="fa-solid fa-chevron-down"></i></div></div>
+                <div class="input-group"><label>Chofer asignado</label><div class="fake-select">Carlos Mamani <i class="fa-solid fa-chevron-down"></i></div></div>
+              </div>
+              <div class="loan-note" style="margin-top:2px; background:var(--blue-light); border-left-color:var(--blue); color:var(--blue-dark)"><i class="fa-solid fa-bell"></i><span>Al aprobar, el chofer recibe el préstamo en su aplicación.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <span class="foot-hint"><i class="fa-solid fa-shield-halved"></i> La garantía es un respaldo, no un cobro.</span>
+          <button class="btn-ghost" id="btn-cancelar-prestamo">Cancelar</button>
+          <button class="btn-solid" id="btn-enviar-solicitud"><i class="fa-solid fa-paper-plane"></i> Enviar solicitud</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="dev-modal-1">
+      <div class="modal-container dev-modal" id="dev-modal-1-card">
+        <div class="modal-head">
+          <div class="modal-title"><span class="modal-icon blue"><i class="fa-solid fa-rotate-left"></i></span> Registrar devolución <span class="modal-kicker">PR-003</span></div>
+          <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="dev-body">
+          <div class="dev-summary">
+            <div class="dev-summary-item"><span>Préstamo</span><strong>PR-003</strong></div>
+            <div class="dev-summary-item"><span>Cliente</span><strong>Tienda Doña Rosa</strong></div>
+            <div class="dev-summary-item"><span>Pendientes</span><strong>3 unidades</strong></div>
+            <div class="dev-summary-chips">
+              <span class="prestamo-equipo-chip lleno"><i class="fa-solid fa-bottle-water"></i> 2</span>
+              <span class="prestamo-equipo-chip bebedero"><i class="fa-solid fa-tint"></i> 1</span>
+            </div>
+          </div>
+
+          <div class="dev-row">
+            <div class="dev-row-head"><div class="dev-row-title"><i class="fa-solid fa-bottle-water"></i> Botellas 20 L <small>2 prestadas</small></div><span class="tiny-label">Estado al recibir</span></div>
+            <div class="dev-inputs">
+              <div class="input-group"><label>Devueltas llenas</label><div class="field-box" id="dev1-botellas-ok"><span class="ph">0</span><span class="typed">1</span></div></div>
+              <div class="input-group"><label>Devueltas vacías</label><div class="field-box"><span class="ph">0</span><span class="typed" style="clip-path:inset(0 0 0 0)">0</span></div></div>
+              <div class="input-group"><label>Dañadas</label><div class="field-box"><span class="ph">0</span><span class="typed" style="clip-path:inset(0 0 0 0)">0</span></div></div>
+            </div>
+          </div>
+
+          <div class="dev-row">
+            <div class="dev-row-head"><div class="dev-row-title"><i class="fa-solid fa-tint"></i> Bebedero <small>1 prestado</small></div><span class="tiny-label">Sin devolución en este paso</span></div>
+            <div class="dev-inputs">
+              <div class="input-group"><label>Devueltos</label><div class="field-box"><span class="ph">0</span><span class="typed" style="clip-path:inset(0 0 0 0)">0</span></div></div>
+              <div class="input-group"><label>Dañados</label><div class="field-box"><span class="ph">0</span><span class="typed" style="clip-path:inset(0 0 0 0)">0</span></div></div>
+              <div class="input-group"><label>Observación</label><div class="fake-select muted">Sin observaciones <i class="fa-solid fa-chevron-down"></i></div></div>
+            </div>
+          </div>
+
+          <div class="dev-note amber"><i class="fa-solid fa-circle-exclamation"></i> Devolución parcial: quedarán 2 unidades pendientes. El préstamo sigue abierto.</div>
+        </div>
+        <div class="modal-foot">
+          <span class="foot-hint"><i class="fa-solid fa-boxes-stacked"></i> El stock se actualiza al confirmar.</span>
+          <button class="btn-ghost" id="btn-cancelar-dev1">Cancelar</button>
+          <button class="btn-solid blue" id="btn-confirmar-dev1"><i class="fa-solid fa-check"></i> Confirmar devolución</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="dev-modal-2">
+      <div class="modal-container dev-modal" id="dev-modal-2-card">
+        <div class="modal-head">
+          <div class="modal-title"><span class="modal-icon green" style="background:var(--green-light); color:var(--green-dark)"><i class="fa-solid fa-rotate-left"></i></span> Registrar devolución <span class="modal-kicker">PR-003</span></div>
+          <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="dev-body">
+          <div class="dev-summary">
+            <div class="dev-summary-item"><span>Préstamo</span><strong>PR-003</strong></div>
+            <div class="dev-summary-item"><span>Cliente</span><strong>Tienda Doña Rosa</strong></div>
+            <div class="dev-summary-item"><span>Pendientes</span><strong>2 unidades</strong></div>
+            <div class="dev-summary-chips">
+              <span class="prestamo-equipo-chip lleno"><i class="fa-solid fa-bottle-water"></i> 1</span>
+              <span class="prestamo-equipo-chip bebedero"><i class="fa-solid fa-tint"></i> 1</span>
+            </div>
+          </div>
+
+          <div class="dev-row">
+            <div class="dev-row-head"><div class="dev-row-title"><i class="fa-solid fa-bottle-water"></i> Botellas 20 L <small>1 pendiente</small></div><span class="tiny-label">Última botella</span></div>
+            <div class="dev-inputs">
+              <div class="input-group"><label>Devueltas llenas</label><div class="field-box" id="dev2-botellas-ok"><span class="ph">0</span><span class="typed">1</span></div></div>
+              <div class="input-group"><label>Devueltas vacías</label><div class="field-box"><span class="ph">0</span><span class="typed" style="clip-path:inset(0 0 0 0)">0</span></div></div>
+              <div class="input-group"><label>Dañadas</label><div class="field-box"><span class="ph">0</span><span class="typed" style="clip-path:inset(0 0 0 0)">0</span></div></div>
+            </div>
+          </div>
+
+          <div class="dev-row">
+            <div class="dev-row-head"><div class="dev-row-title"><i class="fa-solid fa-tint"></i> Bebedero <small>1 pendiente</small></div><span class="tiny-label">Estado al recibir</span></div>
+            <div class="dev-inputs">
+              <div class="input-group"><label>Devueltos</label><div class="field-box" id="dev2-bebedero-ok"><span class="ph">0</span><span class="typed">1</span></div></div>
+              <div class="input-group"><label>Dañados</label><div class="field-box"><span class="ph">0</span><span class="typed" style="clip-path:inset(0 0 0 0)">0</span></div></div>
+              <div class="input-group"><label>Observación</label><div class="fake-select green">Todo en buen estado <i class="fa-solid fa-check"></i></div></div>
+            </div>
+          </div>
+
+          <div class="dev-note green"><i class="fa-solid fa-circle-check"></i> Devolución completa: PR-003 se cierra y la garantía de Bs 120 se libera.</div>
+        </div>
+        <div class="modal-foot">
+          <span class="foot-hint"><i class="fa-solid fa-lock"></i> El cierre queda firmado en el historial.</span>
+          <button class="btn-ghost" id="btn-cancelar-dev2">Cancelar</button>
+          <button class="btn-solid green" id="btn-confirmar-dev2"><i class="fa-solid fa-check"></i> Confirmar y cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-overlay" id="info-overlay">
+      <div class="info-shade" id="info-shade"></div>
+      <div class="info-dock" id="info-dock">
+        <div class="info-dock-head">
+          <div class="info-dock-title"><i class="fa-solid fa-scale-balanced"></i> Vender, prestar y otorgar crédito <em>no son lo mismo</em></div>
+          <span class="info-dock-note"><i class="fa-solid fa-circle-info"></i> El módulo que estamos viendo</span>
+        </div>
+        <div class="info-grid">
+          <div class="info-col sell" id="info-sell">
+            <div class="info-icon"><i class="fa-solid fa-cash-register"></i></div>
+            <div>
+              <h4>Vender</h4>
+              <p>Se entrega un equipo a cambio de un pago único. El cliente se queda con la botella o el bebedero.</p>
+              <span class="info-tag">Propiedad del cliente</span>
+            </div>
+          </div>
+          <div class="info-col lend" id="info-lend">
+            <div class="info-icon"><i class="fa-solid fa-hand-holding-droplet"></i></div>
+            <div>
+              <h4>Prestar</h4>
+              <p>El equipo sigue siendo de Aqua Vita, se registra cada unidad y debe volver con su estado.</p>
+              <span class="info-tag">Retorna · se controla</span>
+            </div>
+          </div>
+          <div class="info-col credit" id="info-credit">
+            <div class="info-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <div>
+              <h4>Crédito</h4>
+              <p>Es un pago diferido por un producto o servicio. No hay equipos físicos que devolver.</p>
+              <span class="info-tag">Deuda · sin retorno</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-overlay">
+      <div class="toast" id="toast-request">
+        <div class="toast-icon"><i class="fa-solid fa-paper-plane"></i></div>
+        <div><strong>Solicitud PR-003 registrada</strong><span>Rosa Quispe · 3 unidades · pendiente de aprobación</span></div>
+      </div>
+      <div class="toast" id="toast-approved">
+        <div class="toast-icon"><i class="fa-solid fa-check"></i></div>
+        <div><strong>PR-003 aprobado</strong><span>8 unidades en préstamo · aviso enviado al chofer</span></div>
+      </div>
+      <div class="toast amber" id="toast-partial">
+        <div class="toast-icon"><i class="fa-solid fa-rotate-left"></i></div>
+        <div><strong>Devolución parcial registrada</strong><span>1 botella devuelta · quedan 2 unidades pendientes</span></div>
+      </div>
+      <div class="toast" id="toast-closed">
+        <div class="toast-icon"><i class="fa-solid fa-lock"></i></div>
+        <div><strong>Préstamo PR-003 cerrado</strong><span>3/3 devueltas · garantía liberada · historial actualizado</span></div>
+      </div>
+    </div>
+
+    <div class="check-overlay" id="check-approve">
+      <div class="check-card" id="check-approve-card">
+        <div class="check-circle">
+          <svg class="check-svg" viewBox="0 0 64 64"><path class="check-path" id="check-path-1" d="M17 33 L27 43 L48 21"/></svg>
+        </div>
+        <div class="check-title">Préstamo aprobado</div>
+        <div class="check-sub">PR-003 · <strong>3 unidades</strong> entregadas a Rosa Quispe</div>
+        <div class="check-chips">
+          <span class="prestamo-equipo-chip lleno"><i class="fa-solid fa-bottle-water"></i> 2 botellas</span>
+          <span class="prestamo-equipo-chip bebedero"><i class="fa-solid fa-tint"></i> 1 bebedero</span>
+          <span class="prestamo-equipo-chip devuelto" style="background:var(--green-light); color:var(--green-dark)"><i class="fa-regular fa-calendar"></i> 24 nov</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="check-overlay" id="check-partial">
+      <div class="check-card" id="check-partial-card">
+        <div class="check-circle" style="background:linear-gradient(135deg,#d97706,#f59e0b); box-shadow:0 20px 40px -16px rgba(245,158,11,.6), inset 0 0 0 6px rgba(255,255,255,.18)">
+          <svg class="check-svg" viewBox="0 0 64 64"><path class="check-path" id="check-path-2" d="M17 33 L27 43 L48 21"/></svg>
+        </div>
+        <div class="check-title" style="color:var(--amber-dark)">Devolución parcial</div>
+        <div class="check-sub">PR-003 · <strong>1 botella</strong> devuelta · quedan 2 unidades</div>
+        <div class="check-chips">
+          <span class="prestamo-equipo-chip parcial"><i class="fa-solid fa-rotate-left"></i> 1 de 3</span>
+          <span class="prestamo-equipo-chip lleno"><i class="fa-solid fa-boxes-stacked"></i> Stock actualizado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="check-overlay" id="check-full">
+      <div class="check-card" id="check-full-card">
+        <div class="check-circle">
+          <svg class="check-svg" viewBox="0 0 64 64"><path class="check-path" id="check-path-3" d="M17 33 L27 43 L48 21"/></svg>
+        </div>
+        <div class="check-title">Préstamo cerrado</div>
+        <div class="check-sub">PR-003 · <strong>3/3 unidades</strong> devueltas en buen estado</div>
+        <div class="check-chips">
+          <span class="prestamo-equipo-chip devuelto" style="background:var(--green-light); color:var(--green-dark)"><i class="fa-solid fa-lock"></i> Garantía liberada</span>
+          <span class="prestamo-equipo-chip devuelto" style="background:var(--green-light); color:var(--green-dark)"><i class="fa-solid fa-clock-rotate-left"></i> En historial</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-scene" id="phone-scene">
+    <div class="phone-backdrop"></div>
+    <div class="phone-center" id="phone-center">
+      <div class="phone-device">
+        <div class="phone-screen">
+          <div class="ph-status"><span>9:41</span><span class="ph-status-right"><i class="fa-solid fa-signal"></i><i class="fa-solid fa-wifi"></i><i class="fa-solid fa-battery-full"></i></span></div>
+          <div class="ph-header">
+            <div class="ph-brand"><span class="brand-mark"><i class="fa-solid fa-droplet"></i></span> Aqua Vita</div>
+            <span class="ph-driver"><i class="fa-solid fa-truck"></i> Chofer · Carlos M.</span>
+          </div>
+          <div class="ph-main">
+            <div class="ph-section-head"><h3><i class="fa-solid fa-hand-holding-droplet"></i> Mis préstamos</h3><span>Hoy · 17 nov</span></div>
+            <div class="ph-hero">
+              <div class="ph-hero-top"><span class="ph-hero-label">En tu poder</span><span class="ph-hero-pill"><i class="fa-solid fa-shield-halved"></i> Asignado</span></div>
+              <div class="ph-hero-total">3<small>unidades</small></div>
+              <div class="ph-hero-split"><div><span>Botellas</span><strong>2</strong></div><div><span>Bebederos</span><strong>1</strong></div><div><span>Préstamos</span><strong>1</strong></div></div>
+            </div>
+            <div class="ph-notice"><i class="fa-solid fa-circle-check"></i> PR-003 aprobado hoy 09:42 · 3 unidades asignadas</div>
+            <div class="ph-tabs"><span class="ph-tab active">Activos</span><span class="ph-tab">Todos</span><span class="ph-tab">Historial</span></div>
+            <div class="ph-card" id="ph-card-pr003">
+              <div class="ph-card-top">
+                <div><div class="ph-numero">PR-003 · Hoy</div><div class="ph-title">Tienda Doña Rosa</div><div class="ph-sub">Rosa Quispe · CI 4567890</div></div>
+                <span class="ph-badge">Prestado</span>
+              </div>
+              <div class="ph-meta"><span><i class="fa-regular fa-calendar"></i> Entrega hoy</span><span><i class="fa-solid fa-clock"></i> Devolver 24 nov</span></div>
+              <div class="ph-meta"><span><i class="fa-solid fa-location-dot"></i> Av. Monseñor Rivero #123</span></div>
+              <div class="ph-chips"><span class="ph-chip lleno"><i class="fa-solid fa-bottle-water"></i> 2 llenas</span><span class="ph-chip bebedero"><i class="fa-solid fa-tint"></i> 1 bebedero</span></div>
+              <div class="ph-footer"><button class="ph-btn primary" id="ph-btn-devolver"><i class="fa-solid fa-rotate-left"></i> Registrar devolución</button><button class="ph-btn"><i class="fa-solid fa-phone"></i> Llamar</button></div>
+            </div>
+            <div class="ph-route">
+              <div class="ph-route-title"><span>Ruta de hoy</span><span>2 paradas</span></div>
+              <div class="ph-stop done"><strong>09:42 · Entrega PR-003</strong><span>Entregado</span></div>
+              <div class="ph-stop active"><strong>11:05 · Devolución PR-003</strong><span>Programada</span></div>
+              <div class="ph-stop"><strong>12:30 · Retorno a tienda</strong><span>Pendiente</span></div>
+            </div>
+            <div class="ph-note-line" style="display:flex; align-items:center; gap:6px; margin-top:9px; font-size:7.5px; font-weight:700; color:var(--muted)"><i class="fa-solid fa-circle-info" style="color:var(--teal)"></i> El administrador confirma el estado y cierra el préstamo.</div>
+          </div>
+          <div class="ph-nav">
+            <div class="ph-nav-item"><i class="fa-solid fa-house"></i><span>Inicio</span></div>
+            <div class="ph-nav-item active"><i class="fa-solid fa-hand-holding-droplet"></i><span>Préstamos</span></div>
+            <div class="ph-nav-item"><i class="fa-solid fa-route"></i><span>Ruta</span></div>
+            <div class="ph-nav-item"><i class="fa-solid fa-chart-simple"></i><span>Resumen</span></div>
+            <div class="ph-nav-item"><i class="fa-solid fa-user"></i><span>Perfil</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-caption left" id="phone-cap-left">
+      <span class="cap-kicker"><i class="fa-solid fa-truck"></i> 01 · Vista del chofer</span>
+      <h4>El préstamo viaja con él.</h4>
+      <p>Carlos ve la tienda, las <em>3 unidades</em> y la fecha límite. Lo que sale de la oficina llega a la calle con el mismo registro.</p>
+      <div class="cap-line"><i class="fa-solid fa-mobile-screen"></i> Misma información, otro rol</div>
+    </div>
+    <div class="phone-caption" id="phone-cap-right">
+      <span class="cap-kicker"><i class="fa-solid fa-rotate-left"></i> 02 · Devolución en campo</span>
+      <h4>La devolución empieza aquí.</h4>
+      <p>El chofer toca <em>“Registrar devolución”</em>. El administrador recibe el aviso, confirma el estado y cierra el préstamo.</p>
+      <div class="cap-steps"><span class="cap-step on">1</span><span class="cap-bar"></span><span class="cap-step on">2</span><span class="cap-bar"></span><span class="cap-step">3</span></div>
+      <div class="cap-line"><i class="fa-solid fa-arrow-right"></i> Continúa en el panel admin</div>
+    </div>
+  </div>
+
+  <div class="intro-scene" id="intro-scene">
+    <div class="intro-ring r1" id="intro-ring-1"></div>
+    <div class="intro-ring r2" id="intro-ring-2"></div>
+    <div class="intro-ring r3" id="intro-ring-3"></div>
+    <div class="intro-scan" id="intro-scan"></div>
+    <div class="intro-content">
+      <div class="intro-brandline" id="intro-brandline"><span class="brand-mark"><i class="fa-solid fa-droplet"></i></span> Aqua Vita <span class="sep"></span> <small>Operaciones</small></div>
+      <div class="intro-title" id="intro-title">Préstamos que<br><span>vuelven</span>.</div>
+      <div class="intro-sub" id="intro-sub">El procedimiento completo de Aqua Vita: <strong>solicitar, aprobar, entregar y cerrar</strong> cada botella, bebedero y garrafón.</div>
+      <div class="intro-flow" id="intro-flow">
+        <div class="flow-step done" id="flow-1"><i class="fa-solid fa-file-circle-plus"></i> Solicitud</div>
+        <div class="flow-link"></div>
+        <div class="flow-step done" id="flow-2"><i class="fa-solid fa-circle-check"></i> Aprobación</div>
+        <div class="flow-link"></div>
+        <div class="flow-step done" id="flow-3"><i class="fa-solid fa-truck-fast"></i> Entrega</div>
+        <div class="flow-link"></div>
+        <div class="flow-step" id="flow-4"><i class="fa-solid fa-rotate-left"></i> Devolución</div>
+        <div class="flow-link"></div>
+        <div class="flow-step" id="flow-5"><i class="fa-solid fa-lock"></i> Cierre</div>
+      </div>
+      <div class="intro-foot" id="intro-foot">
+        <span><i class="fa-solid fa-user-tie"></i> Admin</span><span class="dot"></span>
+        <span><i class="fa-solid fa-truck"></i> Chofer</span><span class="dot"></span>
+        <span><i class="fa-solid fa-shield-halved"></i> 0 equipos perdidos</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="outro-scene" id="outro-scene">
+    <div class="outro-content">
+      <div class="outro-check" id="outro-check"><i class="fa-solid fa-check"></i></div>
+      <div class="outro-kicker" id="outro-kicker">Procedimiento completo</div>
+      <div class="outro-title" id="outro-title">Cada equipo<br><span>vuelve</span>.</div>
+      <div class="outro-sub" id="outro-sub">Solicitud, aprobación, entrega, devolución y cierre. Todo queda registrado, con el mismo dato en la oficina y en la calle.</div>
+      <div class="outro-pills" id="outro-pills">
+        <span class="outro-pill"><i class="fa-solid fa-check"></i> 3/3 devueltas</span>
+        <span class="outro-pill"><i class="fa-solid fa-check"></i> 0 pendientes</span>
+        <span class="outro-pill"><i class="fa-solid fa-lock"></i> Garantía liberada</span>
+      </div>
+      <div class="outro-brandline" id="outro-brandline"><span class="brand-mark"><i class="fa-solid fa-droplet"></i></span> <span>Aqua Vita</span> · Módulo de préstamos</div>
+    </div>
+  </div>
+
+  <div id="click-layer"></div>
+  <div id="cursor">
+    <svg class="cursor-arrow" viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.2 1.8 L2.2 27.2 L9.2 20.6 L14.1 33.4 L19.2 31.3 L14.3 18.8 L24.6 18.8 Z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</div>
+<script src="assets/gsap.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var tl = null;
+  var CURSOR_EVENTS = [];
+
+  var CURSOR_TARGETS = [
+    { time: 10050, selector: '#btn-nuevo-prestamo', click: true },
+    { time: 10900, selector: '#f-cliente', click: true },
+    { time: 12020, selector: '#f-ci', click: true },
+    { time: 12800, selector: '#f-telefono', click: true },
+    { time: 13520, selector: '#f-direccion', click: true },
+    { time: 14800, selector: '#f-garantia', click: true },
+    { time: 15150, selector: '#btn-add-bottle', click: true },
+    { time: 15850, selector: '#btn-add-fountain', click: true },
+    { time: 19000, selector: '#btn-enviar-solicitud', click: true },
+    { time: 19860, selector: '#tab-aprobar', click: true },
+    { time: 22950, selector: '#btn-aprobar-pr003', click: true },
+    { time: 24620, selector: '#tab-todos', click: true },
+    { time: 34820, selector: '#ph-btn-devolver', click: false, dx: -58, dy: 46 },
+    { time: 35400, selector: '#ph-btn-devolver', click: true, light: true },
+    { time: 37000, selector: '#btn-devolver-pr003', click: true },
+    { time: 38350, selector: '#dev1-botellas-ok', click: true },
+    { time: 42600, selector: '#btn-confirmar-dev1', click: true },
+    { time: 45600, selector: '#btn-devolver-pr003', click: true },
+    { time: 46800, selector: '#dev2-botellas-ok', click: true },
+    { time: 47350, selector: '#dev2-bebedero-ok', click: true },
+    { time: 50800, selector: '#btn-confirmar-dev2', click: true },
+    { time: 53620, selector: '#tab-historial', click: true },
+    { time: 55200, x: 1510, y: 950, click: false }
+  ];
+
+  function centerOf(selector) {
+    var el = document.querySelector(selector);
+    if (!el) return { x: 720, y: 450 };
+    var r = el.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  }
+
+  window.setTime = function (timeMs) {
+    var t = Number(timeMs);
+    if (!isFinite(t)) t = 0;
+    t = Math.max(0, Math.min(60000, t));
+    if (tl) tl.seek(t / 1000, false);
+  };
+
+  // Build the timeline only after every face is ready, then register it last.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { build(); });
+  } else {
+    build();
+  }
+
+  function build() {
+    CURSOR_EVENTS = CURSOR_TARGETS.map(function (item) {
+      if (typeof item.x === 'number') {
+        return { time: item.time, x: item.x, y: item.y, click: !!item.click };
+      }
+      var p = centerOf(item.selector);
+      return { time: item.time, x: p.x + (item.dx || 0), y: p.y + (item.dy || 0), click: !!item.click, light: !!item.light };
+    });
+    window.CURSOR_EVENTS = CURSOR_EVENTS;
+
+    var clickLayer = document.getElementById('click-layer');
+    var clickRings = [];
+    CURSOR_EVENTS.forEach(function (ev) {
+      if (!ev.click) return;
+      var ring = document.createElement('span');
+      ring.className = 'click-ring' + (ev.light ? ' light' : '');
+      clickLayer.appendChild(ring);
+      gsap.set(ring, { x: ev.x, y: ev.y, scale: 0.3, opacity: 0 });
+      clickRings.push({ el: ring, time: ev.time });
+    });
+
+    var first = CURSOR_EVENTS[0];
+    gsap.set('#cursor', { x: first.x - 140, y: first.y + 92 });
+
+    tl = gsap.timeline({ paused: true, defaults: { ease: 'power2.out' } });
+
+    /* ---------- 0-3s · INTRO ---------- */
+    tl.fromTo('#intro-scene', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.22 }, 0);
+    tl.fromTo('#intro-ring-1', { scale: 0.82, opacity: 0 }, { scale: 1.08, opacity: 0.85, duration: 1.8 }, 0.1);
+    tl.fromTo('#intro-ring-2', { scale: 0.9, opacity: 0 }, { scale: 1.04, opacity: 0.65, duration: 2.0 }, 0.2);
+    tl.fromTo('#intro-ring-3', { scale: 0.85, opacity: 0 }, { scale: 1.1, opacity: 0.75, duration: 1.6 }, 0.3);
+    tl.fromTo('#intro-scan', { y: 0, opacity: 0 }, { y: 900, opacity: 0.55, duration: 2.1, ease: 'none' }, 0.12);
+    tl.fromTo('#intro-brandline', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45 }, 0.28);
+    tl.fromTo('#intro-title', { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power4.out' }, 0.4);
+    tl.fromTo('#intro-sub', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 0.68);
+    tl.fromTo('#intro-flow', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.92);
+    tl.fromTo('#flow-1', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: 'back.out(1.6)' }, 0.96);
+    tl.fromTo('#flow-2', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: 'back.out(1.6)' }, 1.04);
+    tl.fromTo('#flow-3', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: 'back.out(1.6)' }, 1.12);
+    tl.fromTo('#flow-4', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: 'back.out(1.6)' }, 1.2);
+    tl.fromTo('#flow-5', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: 'back.out(1.6)' }, 1.28);
+    tl.fromTo('#intro-foot', { opacity: 0 }, { opacity: 1, duration: 0.4 }, 1.45);
+    tl.to('.intro-content', { opacity: 0, y: -24, duration: 0.38, ease: 'power2.in' }, 2.38);
+    tl.to('#intro-scene', { autoAlpha: 0, duration: 0.5, ease: 'power2.inOut' }, 2.55);
+    tl.fromTo('#app', { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power2.out' }, 2.35);
+
+    /* ---------- 3-10s · ADMIN OVERVIEW + COMPARISON ---------- */
+    tl.fromTo('.section-title', { y: -8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, 2.45);
+    tl.fromTo('.count-stack', { x: 8, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35 }, 2.48);
+    tl.fromTo('.prestamos-hero', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 2.5);
+    tl.fromTo('.prestamos-tabs', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 2.62);
+    tl.fromTo('#tab-bg-todos', { opacity: 0 }, { opacity: 1, duration: 0.25 }, 2.66);
+    tl.fromTo('.prestamos-actions', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 2.7);
+    tl.fromTo('#card-pr001', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, 2.74);
+    tl.fromTo('#card-pr002', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, 2.82);
+    tl.fromTo('#card-pr000', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, 2.9);
+    tl.fromTo('#info-shade', { opacity: 0 }, { opacity: 1, duration: 0.4 }, 4.15);
+    tl.fromTo('#info-dock', { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, 4.3);
+    tl.fromTo('#info-sell', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 4.55);
+    tl.fromTo('#info-lend', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 4.7);
+    tl.fromTo('#info-credit', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 4.85);
+    tl.to('#info-sell', { y: 8, opacity: 0, duration: 0.25 }, 8.7);
+    tl.to('#info-lend', { y: 8, opacity: 0, duration: 0.25 }, 8.74);
+    tl.to('#info-credit', { y: 8, opacity: 0, duration: 0.25 }, 8.78);
+    tl.to('#info-dock', { y: 18, opacity: 0, duration: 0.35 }, 8.86);
+    tl.to('#info-shade', { opacity: 0, duration: 0.35 }, 8.88);
+
+    /* ---------- CURSOR PATH + CLICK RIPPLES ---------- */
+    tl.to('#cursor', { opacity: 1, duration: 0.2 }, 9.45);
+    CURSOR_EVENTS.forEach(function (ev, i) {
+      if (i === 0) {
+        tl.to('#cursor', { x: ev.x, y: ev.y, duration: 0.53, ease: 'power3.inOut' }, 9.52);
+        return;
+      }
+      var prev = CURSOR_EVENTS[i - 1];
+      var dist = Math.sqrt(Math.pow(ev.x - prev.x, 2) + Math.pow(ev.y - prev.y, 2));
+      var dur = Math.min(0.7, Math.max(0.26, dist / 1300));
+      var start = Math.max(prev.time / 1000 + 0.06, ev.time / 1000 - dur);
+      tl.to('#cursor', { x: ev.x, y: ev.y, duration: dur, ease: 'power3.inOut' }, start);
+    });
+    clickRings.forEach(function (ring) {
+      tl.fromTo(ring.el, { scale: 0.3, opacity: 0.72 }, { scale: 2.1, opacity: 0, duration: 0.55, ease: 'power2.out' }, ring.time / 1000);
+    });
+    tl.to('#cursor', { opacity: 0, duration: 0.18 }, 23.0);
+    tl.to('#cursor', { opacity: 1, duration: 0.18 }, 24.42);
+    tl.to('#cursor', { opacity: 0, duration: 0.2 }, 27.0);
+    tl.to('#cursor', { opacity: 1, duration: 0.2 }, 34.78);
+    tl.to('#cursor', { opacity: 0, duration: 0.18 }, 42.65);
+    tl.to('#cursor', { opacity: 1, duration: 0.18 }, 44.35);
+    tl.to('#cursor', { opacity: 0, duration: 0.18 }, 50.85);
+    tl.to('#cursor', { opacity: 1, duration: 0.18 }, 52.3);
+    tl.to('#cursor', { opacity: 0, duration: 0.22 }, 55.4);
+
+    /* ---------- 10-20s · NEW LOAN MODAL ---------- */
+    tl.fromTo('#loan-modal', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.26 }, 10.06);
+    tl.fromTo('#loan-modal-card', { y: 36, scale: 0.97, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: 'power3.out' }, 10.08);
+    tl.to('#f-cliente .ph', { opacity: 0, duration: 0.12 }, 10.88);
+    tl.fromTo('#f-cliente .typed', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.75, ease: 'none' }, 11.0);
+    tl.to('#f-ci .ph', { opacity: 0, duration: 0.12 }, 12.0);
+    tl.fromTo('#f-ci .typed', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.4, ease: 'none' }, 12.12);
+    tl.to('#f-telefono .ph', { opacity: 0, duration: 0.12 }, 12.78);
+    tl.fromTo('#f-telefono .typed', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.55, ease: 'none' }, 12.9);
+    tl.to('#f-direccion .ph', { opacity: 0, duration: 0.12 }, 13.5);
+    tl.fromTo('#f-direccion .typed', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.85, ease: 'none' }, 13.62);
+    tl.to('#f-garantia .ph', { opacity: 0, duration: 0.12 }, 14.78);
+    tl.fromTo('#f-garantia .typed', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.4, ease: 'none' }, 14.9);
+    tl.fromTo('#draft-bottle', { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 15.22);
+    tl.fromTo('#draft-fountain', { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 15.92);
+    tl.fromTo('.draft-total', { y: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3 }, 16.0);
+    tl.to('#loan-modal-card', { y: 18, scale: 0.985, opacity: 0, duration: 0.3, ease: 'power2.in' }, 19.1);
+    tl.to('#loan-modal', { autoAlpha: 0, duration: 0.26, ease: 'power2.in' }, 19.14);
+    tl.fromTo('#toast-request', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 19.5);
+    tl.to('#toast-request', { y: -10, opacity: 0, duration: 0.3 }, 21.3);
+    tl.fromTo('#aprobacion-badge', { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(2)' }, 19.62);
+    tl.to('#pane-todos', { opacity: 0, duration: 0.24 }, 19.86);
+    tl.to('#tab-bg-todos', { opacity: 0, duration: 0.2 }, 19.86);
+    tl.to('#tab-label-todos', { color: '#64748b', duration: 0.2 }, 19.86);
+    tl.fromTo('#pane-aprobacion', { opacity: 0 }, { opacity: 1, duration: 0.28 }, 19.9);
+    tl.to('#tab-bg-aprobar', { opacity: 1, duration: 0.2 }, 19.86);
+    tl.to('#tab-label-aprobar', { color: '#ffffff', duration: 0.2 }, 19.86);
+    tl.fromTo('#card-pr003-aprobacion', { y: 16, opacity: 0, scale: 0.985 }, { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'power3.out' }, 20.02);
+
+    /* ---------- 20-27s · APPROVAL ---------- */
+    tl.fromTo('#check-approve', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.22 }, 22.98);
+    tl.fromTo('#check-approve-card', { y: 14, scale: 0.9, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.42, ease: 'back.out(1.4)' }, 23.0);
+    tl.fromTo('#check-approve .check-circle', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, 23.02);
+    tl.fromTo('#check-path-1', { strokeDashoffset: 52 }, { strokeDashoffset: 0, duration: 0.55 }, 23.12);
+    tl.to('#check-approve-card', { y: -10, scale: 0.97, opacity: 0, duration: 0.26, ease: 'power2.in' }, 24.18);
+    tl.to('#check-approve', { autoAlpha: 0, duration: 0.22 }, 24.26);
+    tl.to('#pane-aprobacion', { opacity: 0, duration: 0.24 }, 24.62);
+    tl.to('#pane-todos', { opacity: 1, duration: 0.28 }, 24.66);
+    tl.to('#tab-bg-aprobar', { opacity: 0, duration: 0.2 }, 24.62);
+    tl.to('#tab-bg-todos', { opacity: 1, duration: 0.2 }, 24.62);
+    tl.to('#tab-label-aprobar', { color: '#64748b', duration: 0.2 }, 24.62);
+    tl.to('#tab-label-todos', { color: '#ffffff', duration: 0.2 }, 24.62);
+    tl.to('#aprobacion-badge', { opacity: 0, scale: 0.6, duration: 0.25 }, 24.55);
+    tl.fromTo('#card-pr003-todos', { y: 18, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }, 24.78);
+    tl.to('#pr003-badge-prestado', { opacity: 1, duration: 0.2 }, 24.9);
+    tl.to('#count-2a', { opacity: 0, duration: 0.25 }, 24.85);
+    tl.to('#count-3', { opacity: 1, duration: 0.25 }, 24.9);
+    tl.to('#hero-total-5a', { opacity: 0, duration: 0.25 }, 24.88);
+    tl.to('#hero-total-8', { opacity: 1, duration: 0.25 }, 24.92);
+    tl.fromTo('#toast-approved', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 25.0);
+    tl.to('#toast-approved', { y: -10, opacity: 0, duration: 0.3 }, 26.8);
+
+    /* ---------- 27-36s · DRIVER PHONE ---------- */
+    tl.fromTo('#phone-scene', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35 }, 27.0);
+    tl.fromTo('#phone-center', { y: 44, scale: 0.94, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.62, ease: 'power3.out' }, 27.06);
+    tl.fromTo('#ph-card-pr003', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45 }, 27.48);
+    tl.fromTo('#phone-cap-left', { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45 }, 28.05);
+    tl.fromTo('#phone-cap-right', { x: 18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45 }, 28.3);
+    tl.to('#ph-btn-devolver', { scale: 0.95, duration: 0.08 }, 35.4);
+    tl.to('#ph-btn-devolver', { scale: 1, duration: 0.18 }, 35.49);
+    tl.to('#phone-center', { y: 30, scale: 0.97, opacity: 0, duration: 0.45, ease: 'power2.in' }, 35.95);
+    tl.to('#phone-cap-left', { x: -14, opacity: 0, duration: 0.3 }, 36.0);
+    tl.to('#phone-cap-right', { x: 14, opacity: 0, duration: 0.3 }, 36.0);
+    tl.to('#phone-scene', { autoAlpha: 0, duration: 0.3 }, 36.18);
+
+    /* ---------- 36-45s · PARTIAL RETURN ---------- */
+    tl.fromTo('#dev-modal-1', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.26 }, 37.05);
+    tl.fromTo('#dev-modal-1-card', { y: 32, scale: 0.97, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: 'power3.out' }, 37.07);
+    tl.to('#dev1-botellas-ok .ph', { opacity: 0, duration: 0.12 }, 38.33);
+    tl.fromTo('#dev1-botellas-ok .typed', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.35, ease: 'none' }, 38.45);
+    tl.fromTo('#dev1-botellas-ok', { boxShadow: '0 0 0 0 rgba(13,148,136,0)' }, { boxShadow: '0 0 0 4px rgba(13,148,136,0.16)', duration: 0.2 }, 38.35);
+    tl.to('#dev1-botellas-ok', { boxShadow: '0 0 0 0 rgba(13,148,136,0)', duration: 0.3 }, 39.2);
+    tl.to('#dev-modal-1-card', { y: 18, scale: 0.985, opacity: 0, duration: 0.3, ease: 'power2.in' }, 42.6);
+    tl.to('#dev-modal-1', { autoAlpha: 0, duration: 0.26 }, 42.68);
+    tl.fromTo('#check-partial', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.22 }, 42.72);
+    tl.fromTo('#check-partial-card', { y: 14, scale: 0.9, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.42, ease: 'back.out(1.4)' }, 42.74);
+    tl.fromTo('#check-partial .check-circle', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, 42.76);
+    tl.fromTo('#check-path-2', { strokeDashoffset: 52 }, { strokeDashoffset: 0, duration: 0.55 }, 42.86);
+    tl.to('#check-partial-card', { y: -10, scale: 0.97, opacity: 0, duration: 0.26 }, 43.95);
+    tl.to('#check-partial', { autoAlpha: 0, duration: 0.22 }, 44.03);
+    tl.to('#pr003-badge-prestado', { opacity: 0, duration: 0.2 }, 42.85);
+    tl.to('#pr003-badge-parcial', { opacity: 1, duration: 0.2 }, 42.9);
+    tl.to('#pr003-text-0', { opacity: 0, duration: 0.2 }, 42.88);
+    tl.to('#pr003-text-1', { opacity: 1, duration: 0.2 }, 42.93);
+    tl.to('#pr003-count-0', { opacity: 0, duration: 0.2 }, 42.88);
+    tl.to('#pr003-count-1', { opacity: 1, duration: 0.2 }, 42.93);
+    tl.to('#pr003-chips-prestado', { opacity: 0, duration: 0.22 }, 42.85);
+    tl.to('#pr003-chips-parcial', { opacity: 1, duration: 0.22 }, 42.95);
+    tl.fromTo('#pr003-dot-1', { scaleX: 0 }, { scaleX: 1, duration: 0.45 }, 42.9);
+    tl.to('#hero-total-8', { opacity: 0, duration: 0.25 }, 43.0);
+    tl.to('#hero-total-7', { opacity: 1, duration: 0.25 }, 43.05);
+    tl.to('#count-3', { opacity: 0, duration: 0.25 }, 43.0);
+    tl.to('#count-2b', { opacity: 1, duration: 0.25 }, 43.05);
+    tl.fromTo('#toast-partial', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 44.3);
+    tl.to('#toast-partial', { y: -10, opacity: 0, duration: 0.3 }, 45.4);
+
+    /* ---------- 45-53s · FULL RETURN ---------- */
+    tl.fromTo('#dev-modal-2', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.26 }, 45.65);
+    tl.fromTo('#dev-modal-2-card', { y: 32, scale: 0.97, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: 'power3.out' }, 45.67);
+    tl.to('#dev2-botellas-ok .ph', { opacity: 0, duration: 0.12 }, 46.78);
+    tl.fromTo('#dev2-botellas-ok .typed', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.35, ease: 'none' }, 46.9);
+    tl.fromTo('#dev2-botellas-ok', { boxShadow: '0 0 0 0 rgba(13,148,136,0)' }, { boxShadow: '0 0 0 4px rgba(13,148,136,0.16)', duration: 0.2 }, 46.8);
+    tl.to('#dev2-botellas-ok', { boxShadow: '0 0 0 0 rgba(13,148,136,0)', duration: 0.3 }, 47.55);
+    tl.to('#dev2-bebedero-ok .ph', { opacity: 0, duration: 0.12 }, 47.33);
+    tl.fromTo('#dev2-bebedero-ok .typed', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.35, ease: 'none' }, 47.45);
+    tl.fromTo('#dev2-bebedero-ok', { boxShadow: '0 0 0 0 rgba(13,148,136,0)' }, { boxShadow: '0 0 0 4px rgba(13,148,136,0.16)', duration: 0.2 }, 47.35);
+    tl.to('#dev2-bebedero-ok', { boxShadow: '0 0 0 0 rgba(13,148,136,0)', duration: 0.3 }, 48.0);
+    tl.to('#dev-modal-2-card', { y: 18, scale: 0.985, opacity: 0, duration: 0.3, ease: 'power2.in' }, 50.8);
+    tl.to('#dev-modal-2', { autoAlpha: 0, duration: 0.26 }, 50.88);
+    tl.fromTo('#check-full', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.22 }, 50.9);
+    tl.fromTo('#check-full-card', { y: 14, scale: 0.9, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.42, ease: 'back.out(1.4)' }, 50.92);
+    tl.fromTo('#check-full .check-circle', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, 50.94);
+    tl.fromTo('#check-path-3', { strokeDashoffset: 52 }, { strokeDashoffset: 0, duration: 0.55 }, 51.04);
+    tl.to('#check-full-card', { y: -10, scale: 0.97, opacity: 0, duration: 0.26 }, 52.05);
+    tl.to('#check-full', { autoAlpha: 0, duration: 0.22 }, 52.13);
+    tl.to('#pr003-badge-parcial', { opacity: 0, duration: 0.2 }, 51.05);
+    tl.to('#pr003-badge-devuelto', { opacity: 1, duration: 0.2 }, 51.1);
+    tl.to('#pr003-text-1', { opacity: 0, duration: 0.2 }, 51.08);
+    tl.to('#pr003-text-3', { opacity: 1, duration: 0.2 }, 51.13);
+    tl.to('#pr003-count-1', { opacity: 0, duration: 0.2 }, 51.08);
+    tl.to('#pr003-count-3', { opacity: 1, duration: 0.2 }, 51.13);
+    tl.to('#pr003-chips-parcial', { opacity: 0, duration: 0.22 }, 51.05);
+    tl.to('#pr003-chips-devuelto', { opacity: 1, duration: 0.22 }, 51.15);
+    tl.to('#pr003-footer-open', { opacity: 0, duration: 0.2 }, 51.1);
+    tl.to('#pr003-footer-closed', { opacity: 1, duration: 0.25 }, 51.2);
+    tl.fromTo('#pr003-stamp', { scale: 0.8, opacity: 0, rotate: -10 }, { scale: 1, opacity: 1, rotate: -4, duration: 0.35, ease: 'back.out(2)' }, 51.25);
+    tl.fromTo('#pr003-dot-2', { scaleX: 0 }, { scaleX: 1, duration: 0.4 }, 51.1);
+    tl.fromTo('#pr003-dot-3', { scaleX: 0 }, { scaleX: 1, duration: 0.4 }, 51.28);
+    tl.to('#hero-total-7', { opacity: 0, duration: 0.25 }, 51.15);
+    tl.to('#hero-total-5b', { opacity: 1, duration: 0.25 }, 51.2);
+    tl.fromTo('#toast-closed', { y: -12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 52.55);
+    tl.to('#toast-closed', { y: -10, opacity: 0, duration: 0.3 }, 54.0);
+
+    /* ---------- 53-58s · HISTORY ---------- */
+    tl.to('#pane-todos', { opacity: 0, duration: 0.26 }, 53.62);
+    tl.to('#tab-bg-todos', { opacity: 0, duration: 0.2 }, 53.62);
+    tl.to('#tab-label-todos', { color: '#64748b', duration: 0.2 }, 53.62);
+    tl.to('#pane-historial', { opacity: 1, duration: 0.3 }, 53.66);
+    tl.to('#tab-bg-historial', { opacity: 1, duration: 0.2 }, 53.62);
+    tl.to('#tab-label-historial', { color: '#ffffff', duration: 0.2 }, 53.62);
+    tl.to('#hero-default', { opacity: 0, duration: 0.3 }, 53.8);
+    tl.to('#hero-history', { opacity: 1, duration: 0.3 }, 53.85);
+    tl.to('#count-2b', { opacity: 0, duration: 0.25 }, 53.9);
+    tl.to('#count-0', { opacity: 1, duration: 0.25 }, 53.95);
+    tl.fromTo('#card-pr003-history', { scale: 0.985, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4 }, 54.05);
+
+    /* ---------- 58-60s · OUTRO ---------- */
+    tl.fromTo('#outro-scene', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5, ease: 'power2.inOut' }, 58.0);
+    tl.fromTo('#outro-check', { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)' }, 58.1);
+    tl.fromTo('#outro-kicker', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 58.28);
+    tl.fromTo('#outro-title', { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power4.out' }, 58.38);
+    tl.fromTo('#outro-sub', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, 58.6);
+    tl.fromTo('#outro-pills', { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35 }, 58.76);
+    tl.fromTo('#outro-brandline', { opacity: 0 }, { opacity: 1, duration: 0.35 }, 58.95);
+
+    tl.to({}, { duration: 0.01 }, 59.99);
+
+    window.__timelines = window.__timelines || {};
+    window.__timelines['prestamos'] = tl;
+    tl.seek(0);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+name: Render préstamos
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "video/prestamos/**"
+      - ".github/workflows/render-prestamos.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    name: Render 60s · 1440x900 · 30fps
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # HyperFrames 0.9.59 declares engines.node >=22.
+      # Node 20 is not supported by the CLI.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: video/prestamos/package-lock.json
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install dependencies
+        working-directory: video/prestamos
+        run: npm ci
+
+      - name: Lint composition
+        working-directory: video/prestamos
+        run: npm run lint
+
+      - name: Render video
+        working-directory: video/prestamos
+        # SwiftShader keeps CI deterministic on runners without a GPU.
+        # Two workers keep the 1800-frame capture inside the 30-minute job limit.
+        run: npm run render -- --no-browser-gpu --workers 2
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-prestamos
+          path: out/prestamos.mp4
+          if-no-files-found: error
+          retention-days: 30

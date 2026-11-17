@@ -1,0 +1,5 @@
+out/
+video/prestamos/node_modules/
+video/prestamos/.hyperframes/
+video/prestamos/index.html
+.DS_Store

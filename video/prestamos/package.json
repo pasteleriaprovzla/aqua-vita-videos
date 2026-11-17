@@ -1,0 +1,13 @@
+﻿{
+  "name": "aqua-vita-prestamos-video",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Video del procedimiento del modulo de prestamos de Aqua Vita",
+  "scripts": {
+    "render": "hyperframes render -c composicion.html --fps 30 --quality looks --output ../../out/prestamos.mp4",
+    "lint": "hyperframes lint composicion.html"
+  },
+  "dependencies": {
+    "hyperframes": "0.9.59"
+  }
+}
