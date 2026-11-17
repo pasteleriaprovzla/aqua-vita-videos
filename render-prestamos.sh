@@ -10,9 +10,9 @@ ARTIFACT="video-prestamos"
 OUTPUT_DIR="$ROOT_DIR/output"
 OUTPUT_FILE="$OUTPUT_DIR/prestamos.mp4"
 
-for ASSET in video/prestamos/assets/bgm.mp3 video/prestamos/assets/click.wav video/prestamos/assets/success.wav; do
+for ASSET in video/prestamos/assets/bgm.mp3 video/prestamos/assets/narracion.mp3 video/prestamos/assets/click.wav video/prestamos/assets/success.wav; do
   if [ ! -f "$ROOT_DIR/$ASSET" ]; then
-    echo "✗ Falta $ASSET. Ejecuta: cd video/prestamos && npm run audio:generate" >&2
+    echo "✗ Falta $ASSET. Regenera la música/SFX con 'npm run audio:generate' y la voz con 'python scripts/generate-narration.py'." >&2
     exit 1
   fi
 done

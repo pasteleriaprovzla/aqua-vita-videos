@@ -38,6 +38,20 @@ jobs:
         working-directory: video/prestamos
         run: npm ci
 
+      - name: Verify audio assets
+        # La narración y la música están versionadas; falla si falta la voz
+        # o si la pista no cubre el tramo 3–58 s.
+        run: |
+          set -euo pipefail
+          for ASSET in bgm.mp3 narracion.mp3 click.wav success.wav; do
+            test -s "video/prestamos/assets/$ASSET"
+          done
+          test -s video/prestamos/guion.txt
+          DURATION="$(ffprobe -v error -show_entries format=duration \
+            -of csv=p=0 video/prestamos/assets/narracion.mp3)"
+          echo "Narración: ${DURATION}s"
+          awk -v d="$DURATION" 'BEGIN { exit !(d >= 54 && d <= 56) }'
+
       - name: Lint composition
         working-directory: video/prestamos
         run: npm run lint

@@ -5,6 +5,7 @@
   "description": "Video del procedimiento del modulo de prestamos de Aqua Vita",
   "scripts": {
     "audio:generate": "node scripts/generate-audio.mjs",
+    "narration:generate": "python scripts/generate-narration.py",
     "render": "hyperframes render -c composicion.html --fps 30 --quality looks --output ../../out/prestamos.mp4",
     "lint": "hyperframes lint composicion.html"
   },

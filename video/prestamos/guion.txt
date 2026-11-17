@@ -1,0 +1,22 @@
+GUION DE NARRACIÓN — MÓDULO DE PRÉSTAMOS AQUA VITA
+
+Voz: es-MX-JorgeNeural (Microsoft Edge TTS)
+Velocidad: -4% · Tono: +0Hz · Volumen: +0%
+Pista: 55 s, del segundo 3 al 58 del video.
+
+Tono: cercano, profesional y claro. Una idea por escena; deje respirar la imagen entre frases.
+
+| Segundo | Escena | Narración |
+| --- | --- | --- |
+| 0–3 | Intro de marca | *(música, sin voz)* |
+| 3.0 | Panel y comparativa vender / prestar / crédito | Bienvenido al módulo de préstamos de Aqua Vita. Cada equipo que sale debe volver. |
+| 10.2 | Modal Nuevo préstamo | Registre cliente, documento, teléfono, dirección y garantía. Añada los equipos y envíe la solicitud. |
+| 20.3 | Aprobación de la solicitud | Aprobación: confirme la solicitud. Se asignan las unidades y se avisa al chofer. |
+| 27.5 | Vista del chofer | El chofer recibe la misma información en su teléfono y puede registrar la devolución desde la calle. |
+| 36.7 | Devolución parcial | Devolución parcial: registre lo que regresa. El préstamo sigue abierto y el saldo se actualiza. |
+| 45.6 | Devolución total y cierre | Con las tres unidades devueltas, el préstamo se cierra y la garantía queda liberada. |
+| 53.6 | Historial y cierre de marca | Historial completo. Cada equipo vuelve. |
+
+Cierre visual: «Cada equipo vuelve.»
+
+Los tiempos exactos y el texto que sintetiza la voz viven en scripts/generate-narration.py.

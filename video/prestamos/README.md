@@ -13,7 +13,7 @@ La composición es un único archivo (`composicion.html`) con el panel administr
 | Resolución | 1440 × 900 |
 | FPS | 30 |
 | Códec | H.264 / `yuv420p` |
-| Audio | AAC 48 kHz estéreo · música + 6 SFX |
+| Audio | AAC 48 kHz estéreo · narración + música + 6 SFX |
 | Render | HyperFrames 0.9.59 + GSAP 3.15.1 |
 
 ## Flujo de 6 pasos
@@ -62,11 +62,12 @@ Todos los tiempos están en segundos dentro de `build()` en `composicion.html`.
 
 ## Audio
 
-La capa de audio es local y se renderiza con el video. No hay descargas ni servicios remotos.
+La capa de audio es local y se renderiza con el video. La voz está versionada: el render no descarga nada.
 
 | Archivo | Duración | Uso |
 | --- | --- | --- |
-| `assets/bgm.mp3` | 60,24 s | Música instrumental suave, 80 BPM, pad + arpegio. Se reproduce a `data-volume="0.15"`. |
+| `assets/bgm.mp3` | 60,24 s | Música instrumental suave, 80 BPM, pad + arpegio. Se reproduce a `data-volume="0.08"` (−22 dB) para dejar la voz al frente. |
+| `assets/narracion.mp3` | 54,92 s | Voz en off profesional (`es-MX-JorgeNeural`, Edge TTS), normalizada a −16 LUFS. Entra en el segundo 3 y cubre hasta el 58. |
 | `assets/click.wav` | 0,16 s | Click suave de UI. |
 | `assets/success.wav` | 1,90 s | Ding brillante (quinta perfecta E–B) para aprobaciones y cierres. |
 
@@ -81,9 +82,10 @@ El script `scripts/generate-audio.mjs` compone la música muestra a muestra con 
 
 ### Integración con HyperFrames
 
-Dentro de `#root` hay siete elementos `<audio>` con `id`, `data-start`, `data-duration`, `data-volume` y `data-track-index`. HyperFrames descubre esos clips y los mezcla con FFmpeg en el MP4; no hay que llamar `play()` ni `currentTime` desde JavaScript.
+Dentro de `#root` hay ocho elementos `<audio>` con `id`, `data-start`, `data-duration`, `data-volume` y `data-track-index`. HyperFrames descubre esos clips y los mezcla con FFmpeg en el MP4; no hay que llamar `play()` ni `currentTime` desde JavaScript.
 
-- La música lleva `data-timeline-role="music"` y `loop`.
+- La narración lleva `data-timeline-role="voiceover"`, `data-start="3"`, `data-duration="55"` y `data-volume="1"`.
+- La música lleva `data-timeline-role="music"`, `loop` y `data-volume="0.08"`.
 - Los SFX usan un elemento por disparo (HyperFrames agenda cada clip una vez).
 - `window.setTime(ms)` conserva el guard `lastSfxTime`, pero solo registra el cue cruzado en `window.__lastAudioCue`. El audio real lo agenda el runtime desde los atributos; controlar medios de forma imperativa está prohibido por el lint (`imperative_media_control`).
 
@@ -100,15 +102,31 @@ Los tiempos del brief caían entre 0,4 y 2,3 s después del gesto; se ajustaron 
 
 ### Narración
 
-En este repositorio **no existe** `narracion.mp3` ni un script de `edge-tts`; no se añadió un `<audio id="narracion">` apuntando a un archivo inexistente. Cuando el archivo esté disponible, colócalo en `assets/narracion.mp3` y añade dentro de `#root`:
+El guion legible está en `guion.txt`; la fuente de verdad (texto y tiempos) y la mezcla están en `scripts/generate-narration.py`.
 
-```html
-<audio id="narracion" src="assets/narracion.mp3"
-       data-start="0" data-duration="60" data-track-index="9"
-       data-volume="1"></audio>
+| Entrada | Escena | Frase |
+| --- | --- | --- |
+| 3,0 s | Panel y comparativa | «Bienvenido al módulo de préstamos de Aqua Vita…» |
+| 10,2 s | Modal *Nuevo préstamo* | «Registre cliente, documento, teléfono…» |
+| 20,3 s | Aprobación | «Aprobación: confirme la solicitud…» |
+| 27,5 s | Vista del chofer | «El chofer recibe la misma información…» |
+| 36,7 s | Devolución parcial | «Devolución parcial: registre lo que regresa…» |
+| 45,6 s | Devolución total | «Con las tres unidades devueltas…» |
+| 53,6 s | Historial y cierre | «Historial completo. Cada equipo vuelve.» |
+
+Para regenerarla:
+
+```bash
+cd video/prestamos
+python -m pip install edge-tts
+npm run narration:generate
 ```
 
-Después vuelve a ejecutar `npm run lint` y `npm run render`.
+`npm run narration:generate` ejecuta `python scripts/generate-narration.py`.
+
+Requiere Python 3.9 o superior, `edge-tts` y FFmpeg/ffprobe en PATH. El script sintetiza cada frase con `es-MX-JorgeNeural` a −4 %, comprueba que no se solapen, las coloca en su offset exacto dentro de una pista de 55 s y normaliza el conjunto a −16 LUFS / −1,5 dBTP. También reescribe `guion.txt` para que el guion y la voz no se desincronicen. La red solo se usa al regenerar; `assets/narracion.mp3` está versionado y el render funciona sin conexión.
+
+En el MP4 final la voz entra exactamente a los 3,00 s (correlación de energía contra `narracion.mp3`), el mix integrado queda en −16 LUFS y el pico real en −1,0 dBTP. Los tramos sin voz bajan a unos −36 dB de media, así que la música acompaña sin competir con la locución.
 
 ### Flags del CLI
 
@@ -132,7 +150,7 @@ Si cambias `data-duration`:
 
 1. Ajusta los tweens de `build()` y el cierre del timeline.
 2. Actualiza el límite de `window.setTime` (hoy hace `Math.min(60000, …)`).
-3. Ajusta `data-duration` de `#bgm` y de los SFX, y las entradas de `AUDIO_CUES` si cambian los gestos.
+3. Ajusta `data-duration` de `#narracion`, `#bgm` y los SFX, y las entradas de `AUDIO_CUES` si cambian los gestos. Si mueves el corte de entrada o salida de la voz, regenera `narracion.mp3` desde `scripts/generate-narration.py`.
 4. Mantén el último tween/placeholder antes del nuevo final.
 5. Verifica que `window.__timelines['prestamos']` siga registrándose después de construir el timeline.
 
@@ -192,7 +210,7 @@ npx hyperframes render \
   --output ../../out/prestamos.mp4
 ```
 
-La música y los SFX ya están versionados en `assets/`. Si quieres regenerarlos (por ejemplo, después de cambiar la composición musical), ejecuta `npm run audio:generate` antes del render.
+La música, la narración y los SFX ya están versionados en `assets/`. Si quieres regenerar la música o los SFX, ejecuta `npm run audio:generate`; para la voz, `npm run narration:generate`. Después vuelve a renderizar.
 
 Para comprobar que el MP4 salió con audio:
 
@@ -231,7 +249,8 @@ Workflow: `.github/workflows/render-prestamos.yml`.
 
 - Se dispara con `workflow_dispatch` y con push a `video/prestamos/**` (o al propio workflow).
 - Corre en `ubuntu-latest`, con **Node 22** (no 20: lo exige HyperFrames 0.9.59).
-- Instala FFmpeg, ejecuta `npm ci`, lint y render.
+- Instala FFmpeg, ejecuta `npm ci`, verifica los assets de audio y corre lint y render.
+- Comprueba que `narracion.mp3`, `bgm.mp3`, los SFX y `guion.txt` existan; además valida que la voz dure entre 54 y 56 s.
 - Verifica con `ffprobe` que el MP4 contenga una pista AAC antes de subirlo.
 - Sube el artifact `video-prestamos` con `out/prestamos.mp4`.
 - `timeout-minutes: 30` y `permissions: contents: read`.
@@ -264,7 +283,7 @@ Requiere GitHub CLI autenticado y permisos para disparar workflows en el reposit
 
 ## Límites y decisiones
 
-- **Audio local.** Música y SFX se generan con `scripts/generate-audio.mjs` y se versionan en `assets/`. No hay narración porque el `narracion.mp3` prometido no existe en el repositorio; el hueco está documentado arriba.
+- **Audio local.** Música y SFX se generan con `scripts/generate-audio.mjs`; la narración se sintetiza con `edge-tts` desde `scripts/generate-narration.py`. Los cuatro archivos se versionan en `assets/` y el render no necesita red.
 - **Sin red en render.** GSAP, Plus Jakarta Sans, Font Awesome y los audios están vendorizados en `assets/`. La composición no consulta Supabase, APIs, Chart.js, Leaflet, jsPDF, XLSX ni `localStorage`.
 - **Determinismo.** No hay `Math.random`, timers, animaciones infinitas ni carga asíncrona de datos. Se espera `document.fonts.ready` antes de construir el timeline y se expone `window.setTime(ms)` para búsquedas exactas por frame. El generador de audio usa un PRNG con semilla fija.
 - **Un solo HTML.** Todo el escenario vive en `composicion.html`; no hay subcomposiciones montadas.
